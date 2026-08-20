@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+/* Палитра снята с макета _design/YOL - Moscow to Baku.dc.html */
+@theme {
+  --color-sand: #e6e1d4;
+  --color-cream: #f6f3eb;
+  --color-ink: #10251c;
+  --color-pine: #1b3a2c;
+  --color-ochre: #b5751f;
+  --color-moss: #2f5b47;
+  --color-slate: #6b7a70;
+  --color-stone: #8a9490;
+  --color-mist: #a3aca4;
+  --color-sage: #b9c7bd;
+  --color-fern: #8fa898;
+  --color-danger: #a33a2a;
+
+  --font-sans: var(--font-golos), "Noto Sans", system-ui, sans-serif;
+  --font-serif: var(--font-serif-4), Georgia, serif;
+}
+
+html,
+body {
+  background: var(--color-sand);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Полосы прокрутки у горизонтальных лент фильтров прячем — как в макете. */
+.no-sb::-webkit-scrollbar {
+  height: 0;
+  width: 0;
+}
+.no-sb {
+  scrollbar-width: none;
+}
+
+/* Скрываем нативные стрелки у полей с числами: цену вводят с клавиатуры. */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+::placeholder {
+  color: var(--color-mist);
+}
+
+/* Мобильный таб-бар перекрывает контент — оставляем под него место. */
+.pb-tabbar {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+}

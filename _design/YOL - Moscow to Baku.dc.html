@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #E6E1D4; font-family: 'Golos Text', 'Noto Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #2F5B47; text-decoration: none; }
+  a:hover { color: #B5751F; }
+  input, textarea, button, select { font-family: inherit; }
+  input::placeholder, textarea::placeholder { color: #A3ACA4; }
+  .sb::-webkit-scrollbar { height: 0; width: 0; }
+</style>
+</helmet>
+
+<div ref="{{ rootRef }}" style="padding:56px 64px 96px;display:flex;flex-direction:column;gap:64px;align-items:flex-start">
+
+  <div style="display:flex;align-items:baseline;gap:18px">
+    <div style="font-family:'Source Serif 4',Georgia,serif;font-size:34px;font-weight:600;color:#10251C;letter-spacing:-.01em">YOL</div>
+    <div style="font-size:15px;color:#6B7A70">Доска заявок на передачу посылок · Москва → Баку</div>
+  </div>
+
+  <!-- ── 01 DESKTOP FEED ─────────────────────────────── -->
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div style="font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#8A9490">01 — Лента заявок · Desktop 1440</div>
+
+    <div style="width:1440px;background:#F6F3EB;border-radius:14px;overflow:hidden;box-shadow:0 24px 60px -30px rgba(16,37,28,.45),0 0 0 1px rgba(16,37,28,.08)">
+
+      <div style="height:74px;background:#10251C;display:flex;align-items:center;gap:28px;padding:0 32px">
+        <div style="font-family:'Source Serif 4',Georgia,serif;font-size:24px;font-weight:600;color:#F6F3EB;letter-spacing:.02em">YOL</div>
+        <div style="display:flex;align-items:center;gap:9px;padding:7px 14px;border-radius:999px;background:rgba(246,243,235,.09);border:1px solid rgba(246,243,235,.16)">
+          <span style="font-size:13.5px;font-weight:600;color:#F6F3EB" data-az="Moskva">Москва</span>
+          <span style="font-size:13px;color:#8FA898">→</span>
+          <span style="font-size:13.5px;font-weight:600;color:#F6F3EB" data-az="Bakı">Баку</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:26px;margin-left:12px">
+          <span style="font-size:14.5px;font-weight:600;color:#F6F3EB;border-bottom:2px solid #B5751F;padding-bottom:3px" data-az="Sifarişlər">Заявки</span>
+          <span style="font-size:14.5px;color:#B9C7BD;cursor:pointer" style-hover="color:#F6F3EB" data-az="Necə işləyir">Как это работает</span>
+          <span style="font-size:14.5px;color:#B9C7BD;cursor:pointer" style-hover="color:#F6F3EB" data-az="Mənim sifarişlərim">Мои заявки</span>
+        </div>
+        <div style="flex:1"></div>
+        <div style="display:flex;padding:3px;border-radius:8px;background:rgba(246,243,235,.09);gap:2px">
+          <button data-lang-btn="ru" onClick="{{ setRu }}" style="padding:5px 11px;border:0;border-radius:6px;background:#F6F3EB;color:#10251C;font-size:12.5px;font-weight:600;cursor:pointer">RU</button>
+          <button data-lang-btn="az" onClick="{{ setAz }}" style="padding:5px 11px;border:0;border-radius:6px;background:transparent;color:#B9C7BD;font-size:12.5px;font-weight:600;cursor:pointer">AZ</button>
+        </div>
+        <button style="padding:11px 20px;border:0;border-radius:9px;background:#B5751F;color:#FFF8EC;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:#9C6318" data-az="Sifariş yerləşdir">Разместить заявку</button>
+      </div>
+
+      <div style="height:66px;background:#FFFFFF;border-bottom:1px solid #E7E2D6;display:flex;align-items:center;gap:20px;padding:0 32px">
+        <div style="font-size:15px;font-weight:600;color:#16211C" data-az="24 aktiv sifariş">24 активные заявки</div>
+        <div style="width:1px;height:22px;background:#E7E2D6"></div>
+        <div style="display:flex;gap:8px">
+          <span style="padding:7px 14px;border-radius:999px;background:#10251C;color:#F6F3EB;font-size:13.5px;font-weight:600;cursor:pointer" data-az="Hamısı">Все</span>
+          <span style="padding:7px 14px;border-radius:999px;background:#F1EEE4;color:#4A5A50;font-size:13.5px;font-weight:500;cursor:pointer" style-hover="background:#E7E2D6" data-az="Sənədlər">Документы</span>
+          <span style="padding:7px 14px;border-radius:999px;background:#F1EEE4;color:#4A5A50;font-size:13.5px;font-weight:500;cursor:pointer" style-hover="background:#E7E2D6" data-az="Dərmanlar">Лекарства</span>
+          <span style="padding:7px 14px;border-radius:999px;background:#F1EEE4;color:#4A5A50;font-size:13.5px;font-weight:500;cursor:pointer" style-hover="background:#E7E2D6" data-az="Elektronika">Электроника</span>
+          <span style="padding:7px 14px;border-radius:999px;background:#F1EEE4;color:#4A5A50;font-size:13.5px;font-weight:500;cursor:pointer" style-hover="background:#E7E2D6" data-az="Geyim">Одежда</span>
+        </div>
+        <div style="flex:1"></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 13px;border:1px solid #DDD7C9;border-radius:8px;cursor:pointer" style-hover="border-color:#2F5B47">
+          <span style="font-size:13.5px;color:#6B7A70" data-az="Sıralama:">Сортировка:</span>
+          <span style="font-size:13.5px;font-weight:600;color:#16211C" data-az="əvvəlcə yenilər">сначала новые</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 322px;gap:24px;padding:26px 32px 34px;align-items:start">
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+
+          <div style="background:#FFFFFF;border:1px solid #E7E2D6;border-radius:12px;padding:18px;display:grid;grid-template-columns:132px 1fr 214px;gap:20px;align-items:start">
+            <image-slot id="feed-1" style="width:132px;height:132px" shape="rounded" radius="10" placeholder="Фото посылки"></image-slot>
+            <div style="display:flex;flex-direction:column;gap:11px;padding-top:2px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="font-size:19px;font-weight:600;color:#16211C;letter-spacing:-.005em" data-az="Sənədlər, A4 qovluq">Документы, папка А4</div>
+                <div style="padding:3px 8px;border-radius:5px;background:#FBEFDC;color:#8C5A14;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase" data-az="Tələsik">Срочно</div>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:7px">
+                <span style="display:inline-flex;gap:6px;padding:5px 10px;border-radius:7px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500">0,3 кг</span>
+                <span style="display:inline-flex;gap:6px;padding:5px 10px;border-radius:7px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500" data-az="24 avqusta qədər">до 24 августа</span>
+                <span style="display:inline-flex;gap:6px;padding:5px 10px;border-radius:7px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500" data-az="Nizamidə götürmə">Забрать: Хамовники</span>
+              </div>
+              <div style="font-size:14px;line-height:1.5;color:#6B7A70;max-width:520px;text-wrap:pretty" data-az="Nazik qovluq, çəkisi yoxdur. Bakıda Nərimanov metrosunun yanında qohumuma verilməlidir.">Тонкая папка, почти без веса. В Баку передать родственнику у метро Нариманов.</div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:3px">
+                <div style="width:30px;height:30px;border-radius:50%;background:#E3E9E1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#2F5B47">МК</div>
+                <span style="font-size:13.5px;font-weight:600;color:#16211C">Марина К.</span>
+                <span style="font-size:13px;color:#6B7A70">★ 4,9</span>
+                <span style="font-size:13px;color:#B0BAB2">·</span>
+                <span style="font-size:13px;color:#6B7A70" data-az="12 çatdırılma">12 доставок</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;background:#E9F1EA;color:#2F5B47;font-size:11.5px;font-weight:600">✓ <span data-az="Təsdiqlənmiş">Паспорт</span></span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-size:31px;font-weight:600;color:#10251C;line-height:1">3 000 ₽</div>
+              <div style="font-size:12.5px;color:#8A9490;text-align:right;margin-top:-4px" data-az="göndərənin təklifi">предлагает отправитель</div>
+              <button data-name="Марина К." data-item="Документы, папка А4" data-price="3 000 ₽" onClick="{{ openChat }}" style="width:100%;padding:11px 16px;border:0;border-radius:9px;background:#1B3A2C;color:#F6F3EB;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px" style-hover="background:#10251C" data-az="Çatdırılma təklif et">Предложить доставку</button>
+              <div style="font-size:12.5px;color:#8A9490" data-az="3 cavab · 14 dəq əvvəl">3 отклика · 14 минут назад</div>
+            </div>
+          </div>
+
+          <div style="background:#FFFFFF;border:1px solid #E7E2D6;border-radius:12px;padding:18px;display:grid;grid-template-columns:132px 1fr 214px;gap:20px;align-items:start">
+            <image-slot id="feed-2" style="width:132px;height:132px" shape="rounded" radius="10" placeholder="Фото посылки"></image-slot>
+            <div style="display:flex;flex-direction:column;gap:11px;padding-top:2px">
+              <div style="font-size:19px;font-weight:600;color:#16211C;letter-spacing:-.005em" data-az="Aptekdən dərmanlar">Лекарства из аптеки</div>
+              <div style="display:flex;flex-wrap:wrap;gap:7px">
+                <span style="display:inline-flex;gap:6px;padding:5px 10px;border-radius:7px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500">1,2 кг</span>
+                <span style="display:inline-flex;gap:6px;padding:5px 10px;border-radius:7px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500" data-az="20–26 avqust">20–26 августа</span>
+                <span style="display:inline-flex;gap:6px;padding:5px 10px;border-radius:7px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500" data-az="Götürmə: Vnukovo">Забрать: Внуково</span>
+              </div>
+              <div style="font-size:14px;line-height:1.5;color:#6B7A70;max-width:520px;text-wrap:pretty" data-az="Reseptsiz iki qutu, çekləri var. Aeroportda görüşə bilərəm.">Две упаковки без рецепта, чеки прилагаю. Могу встретить в аэропорту.</div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:3px">
+                <div style="width:30px;height:30px;border-radius:50%;background:#E3E9E1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#2F5B47">РА</div>
+                <span style="font-size:13.5px;font-weight:600;color:#16211C">Рустам А.</span>
+                <span style="font-size:13px;color:#6B7A70">★ 4,7</span>
+                <span style="font-size:13px;color:#B0BAB2">·</span>
+                <span style="font-size:13px;color:#6B7A70" data-az="5 çatdırılma">5 доставок</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;background:#E9F1EA;color:#2F5B47;font-size:11.5px;font-weight:600">✓ <span data-az="Təsdiqlənmiş">Паспорт</span></span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-size:31px;font-weight:600;color:#10251C;line-height:1">5 500 ₽</div>
+              <div style="font-size:12.5px;color:#8A9490;text-align:right;margin-top:-4px" data-az="göndərənin təklifi">предлагает отправитель</div>
+              <button data-name="Рустам А." data-item="Лекарства из аптеки" data-price="5 500 ₽" onClick="{{ openChat }}" style="width:100%;padding:11px 16px;border:0;border-radius:9px;background:#1B3A2C;color:#F6F3EB;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px" style-hover="background:#10251C" data-az="Çatdırılma təklif et">Предложить доставку</button>
+              <div style="font-size:12.5px;color:#8A9490" data-az="1 cavab · 2 saat əvvəl">1 отклик · 2 часа назад</div>
+            </div>
+          </div>
+
+          <div style="background:#FFFFFF;border:1px solid #E7E2D6;border-radius:12px;padding:18px;display:grid;grid-template-columns:132px 1fr 214px;gap:20px;align-items:start">
+            <image-slot id="feed-3" style="width:132px;height:132px" shape="rounded" radius="10" placeholder="Фото посылки"></image-slot>
+            <div style="display:flex;flex-direction:column;gap:11px;padding-top:2px">
+              <div style="font-size:19px;font-weight:600;color:#16211C;letter-spacing:-.005em" data-az="Noutbuk, qutuda">Ноутбук в заводской коробке</div>
+              <div style="display:flex;flex-wrap:wrap;gap:7px">
+                <span style="display:inline-flex;gap:6px;padding:5px 10px;border-radius:7px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500">2,5 кг · 36×26×5 см</span>
+                <span style="display:inline-flex;gap:6px;padding:5px 10px;border-radius:7px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500" data-az="30 avqusta qədər">до 30 августа</span>
+                <span style="display:inline-flex;gap:6px;padding:5px 10px;border-radius:7px;background:#FBEFDC;color:#8C5A14;font-size:13px;font-weight:500" data-az="Kövrək">Хрупкое</span>
+              </div>
+              <div style="font-size:14px;line-height:1.5;color:#6B7A70;max-width:520px;text-wrap:pretty" data-az="Yeni, açılmamış. Qutu ilə birlikdə çantada rahat yerləşir.">Новый, запечатан. Помещается в ручную кладь вместе с коробкой.</div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:3px">
+                <div style="width:30px;height:30px;border-radius:50%;background:#E3E9E1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#2F5B47">ЛМ</div>
+                <span style="font-size:13.5px;font-weight:600;color:#16211C">Лейла М.</span>
+                <span style="font-size:13px;color:#6B7A70">★ 5,0</span>
+                <span style="font-size:13px;color:#B0BAB2">·</span>
+                <span style="font-size:13px;color:#6B7A70" data-az="21 çatdırılma">21 доставка</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;background:#E9F1EA;color:#2F5B47;font-size:11.5px;font-weight:600">✓ <span data-az="Təsdiqlənmiş">Паспорт</span></span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-size:31px;font-weight:600;color:#10251C;line-height:1">9 000 ₽</div>
+              <div style="font-size:12.5px;color:#8A9490;text-align:right;margin-top:-4px" data-az="göndərənin təklifi">предлагает отправитель</div>
+              <button data-name="Лейла М." data-item="Ноутбук в заводской коробке" data-price="9 000 ₽" onClick="{{ openChat }}" style="width:100%;padding:11px 16px;border:0;border-radius:9px;background:#1B3A2C;color:#F6F3EB;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px" style-hover="background:#10251C" data-az="Çatdırılma təklif et">Предложить доставку</button>
+              <div style="font-size:12.5px;color:#8A9490" data-az="6 cavab · dünən">6 откликов · вчера</div>
+            </div>
+          </div>
+
+          <div style="background:#FFFFFF;border:1px solid #E7E2D6;border-radius:12px;padding:18px;display:grid;grid-template-columns:132px 1fr 214px;gap:20px;align-items:start">
+            <image-slot id="feed-4" style="width:132px;height:132px" shape="rounded" radius="10" placeholder="Фото посылки"></image-slot>
+            <div style="display:flex;flex-direction:column;gap:11px;padding-top:2px">
+              <div style="font-size:19px;font-weight:600;color:#16211C;letter-spacing:-.005em" data-az="Uşaq geyimləri, 2 paket">Детская одежда, 2 пакета</div>
+              <div style="display:flex;flex-wrap:wrap;gap:7px">
+                <span style="display:inline-flex;gap:6px;padding:5px 10px;border-radius:7px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500">4 кг</span>
+                <span style="display:inline-flex;gap:6px;padding:5px 10px;border-radius:7px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500" data-az="1–5 sentyabr">1–5 сентября</span>
+                <span style="display:inline-flex;gap:6px;padding:5px 10px;border-radius:7px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500" data-az="Baqaj lazımdır">Нужен багаж</span>
+              </div>
+              <div style="font-size:14px;line-height:1.5;color:#6B7A70;max-width:520px;text-wrap:pretty" data-az="İki yumşaq paket, formasını dəyişə bilər. Çamadanda yer varsa yazın.">Два мягких пакета, можно сминать. Напишите, если есть место в чемодане.</div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:3px">
+                <div style="width:30px;height:30px;border-radius:50%;background:#E3E9E1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#2F5B47">АВ</div>
+                <span style="font-size:13.5px;font-weight:600;color:#16211C">Артём В.</span>
+                <span style="font-size:13px;color:#6B7A70">★ 4,8</span>
+                <span style="font-size:13px;color:#B0BAB2">·</span>
+                <span style="font-size:13px;color:#6B7A70" data-az="8 çatdırılma">8 доставок</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;background:#E9F1EA;color:#2F5B47;font-size:11.5px;font-weight:600">✓ <span data-az="Təsdiqlənmiş">Паспорт</span></span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-size:31px;font-weight:600;color:#10251C;line-height:1">6 000 ₽</div>
+              <div style="font-size:12.5px;color:#8A9490;text-align:right;margin-top:-4px" data-az="göndərənin təklifi">предлагает отправитель</div>
+              <button data-name="Артём В." data-item="Детская одежда, 2 пакета" data-price="6 000 ₽" onClick="{{ openChat }}" style="width:100%;padding:11px 16px;border:0;border-radius:9px;background:#1B3A2C;color:#F6F3EB;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px" style-hover="background:#10251C" data-az="Çatdırılma təklif et">Предложить доставку</button>
+              <div style="font-size:12.5px;color:#8A9490" data-az="cavab yoxdur · dünən">пока нет откликов · вчера</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px;position:sticky;top:26px">
+          <sc-if value="{{ showHowItWorks }}" hint-placeholder-val="{{ true }}">
+            <div style="background:#10251C;border-radius:12px;padding:22px">
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-size:19px;font-weight:600;color:#F6F3EB;margin-bottom:16px" data-az="Necə işləyir">Как это работает</div>
+              <div style="display:flex;flex-direction:column;gap:15px">
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                  <div style="width:22px;height:22px;border-radius:50%;background:rgba(246,243,235,.12);color:#F6F3EB;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-top:1px">1</div>
+                  <div style="font-size:13.5px;line-height:1.5;color:#C6D2C8" data-az="Göndərən sifarişi yerləşdirir: nə, nə qədər çəkir, nə vaxta və nə qədər ödəyir.">Отправитель размещает заявку: что, сколько весит, к какому числу и сколько платит.</div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                  <div style="width:22px;height:22px;border-radius:50%;background:rgba(246,243,235,.12);color:#F6F3EB;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-top:1px">2</div>
+                  <div style="font-size:13.5px;line-height:1.5;color:#C6D2C8" data-az="Bakıya uçan sərnişin lentədə sifarişi görür və çatdırılma təklif edir.">Пассажир, летящий в Баку, находит заявку в ленте и предлагает доставку.</div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                  <div style="width:22px;height:22px;border-radius:50%;background:rgba(246,243,235,.12);color:#F6F3EB;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-top:1px">3</div>
+                  <div style="font-size:13.5px;line-height:1.5;color:#C6D2C8" data-az="Detalları — görüş, telefon, ödəniş — şəxsi çatda müzakirə edirsiniz.">Детали — встреча, телефон, оплата — обсуждаете в личном чате.</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+          <div style="background:#FFFFFF;border:1px solid #E7E2D6;border-radius:12px;padding:20px">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px">
+              <span style="font-size:15px;color:#2F5B47">🔒</span>
+              <div style="font-size:14.5px;font-weight:600;color:#16211C" data-az="Əlaqə məlumatları gizlidir">Контакты скрыты</div>
+            </div>
+            <div style="font-size:13.5px;line-height:1.55;color:#6B7A70;text-wrap:pretty" data-az="Telefon nömrələri və ünvanlar lentədə görünmür. Onlar yalnız sifarişi qəbul etdikdən sonra şəxsi çatda açılır.">Телефоны и адреса не видны в ленте. Они открываются только в личном чате, после того как вы договорились.</div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E7E2D6;border-radius:12px;padding:20px">
+            <div style="font-size:14.5px;font-weight:600;color:#16211C;margin-bottom:12px" data-az="Marşrut üzrə">По маршруту сегодня</div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:13.5px;color:#6B7A70" data-az="Aktiv sifarişlər">Активных заявок</span>
+                <span style="font-family:'Source Serif 4',Georgia,serif;font-size:17px;font-weight:600;color:#10251C">24</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:13.5px;color:#6B7A70" data-az="Orta qiymət">Средняя цена</span>
+                <span style="font-family:'Source Serif 4',Georgia,serif;font-size:17px;font-weight:600;color:#10251C">5 400 ₽</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:13.5px;color:#6B7A70" data-az="Bu həftə uçanlar">Летят на этой неделе</span>
+                <span style="font-family:'Source Serif 4',Georgia,serif;font-size:17px;font-weight:600;color:#10251C">11</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 02 DESKTOP FORM + 03/04 MOBILE ─────────────── -->
+  <div style="display:flex;gap:56px;align-items:flex-start">
+
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#8A9490">02 — Новая заявка · Desktop</div>
+      <div style="width:720px;background:#FFFFFF;border-radius:14px;overflow:hidden;box-shadow:0 24px 60px -30px rgba(16,37,28,.45),0 0 0 1px rgba(16,37,28,.08)">
+        <div style="padding:26px 32px 22px;border-bottom:1px solid #EFEBE0">
+          <div style="font-family:'Source Serif 4',Georgia,serif;font-size:26px;font-weight:600;color:#10251C;letter-spacing:-.01em" data-az="Yeni sifariş">Новая заявка</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 13px;border-radius:8px;background:#F1EEE4">
+              <span style="font-size:13.5px;font-weight:600;color:#16211C" data-az="Moskva">Москва</span>
+              <span style="font-size:13px;color:#8A9490">→</span>
+              <span style="font-size:13.5px;font-weight:600;color:#16211C" data-az="Bakı">Баку</span>
+            </div>
+            <span style="font-size:13px;color:#8A9490" data-az="hələlik yalnız bu marşrut">пока единственное направление</span>
+          </div>
+        </div>
+
+        <div style="padding:24px 32px 10px;display:flex;flex-direction:column;gap:22px">
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-size:13.5px;font-weight:600;color:#16211C" data-az="Nə göndərirsiniz">Что нужно передать</label>
+            <input data-az-ph="Məsələn: sənədlər, A4 qovluq" placeholder="Например: документы, папка А4" style="padding:13px 14px;border:1px solid #DDD7C9;border-radius:9px;font-size:14.5px;color:#16211C;outline:none;background:#FDFCF8" style-focus="border-color:#2F5B47;background:#FFFFFF">
+            <div style="display:flex;gap:7px;margin-top:2px">
+              <span style="padding:6px 12px;border-radius:999px;border:1px solid #DDD7C9;font-size:13px;color:#4A5A50;cursor:pointer" style-hover="border-color:#2F5B47;color:#2F5B47" data-az="Sənədlər">Документы</span>
+              <span style="padding:6px 12px;border-radius:999px;border:1px solid #DDD7C9;font-size:13px;color:#4A5A50;cursor:pointer" style-hover="border-color:#2F5B47;color:#2F5B47" data-az="Dərmanlar">Лекарства</span>
+              <span style="padding:6px 12px;border-radius:999px;border:1px solid #DDD7C9;font-size:13px;color:#4A5A50;cursor:pointer" style-hover="border-color:#2F5B47;color:#2F5B47" data-az="Elektronika">Электроника</span>
+              <span style="padding:6px 12px;border-radius:999px;border:1px solid #DDD7C9;font-size:13px;color:#4A5A50;cursor:pointer" style-hover="border-color:#2F5B47;color:#2F5B47" data-az="Geyim">Одежда</span>
+              <span style="padding:6px 12px;border-radius:999px;border:1px solid #DDD7C9;font-size:13px;color:#4A5A50;cursor:pointer" style-hover="border-color:#2F5B47;color:#2F5B47" data-az="Digər">Другое</span>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-size:13.5px;font-weight:600;color:#16211C" data-az="Foto">Фото посылки</label>
+            <div style="display:flex;gap:10px">
+              <image-slot id="form-1" style="width:104px;height:104px" shape="rounded" radius="9" placeholder="Добавить"></image-slot>
+              <image-slot id="form-2" style="width:104px;height:104px" shape="rounded" radius="9" placeholder="Добавить"></image-slot>
+              <div style="flex:1;display:flex;align-items:center;font-size:13px;line-height:1.5;color:#8A9490;max-width:240px;text-wrap:pretty" data-az="Fotolar 2–3 dəfə çox cavab gətirir: sərnişin çəkisini və ölçüsünü görür.">Заявки с фото получают в 2–3 раза больше откликов: пассажир сразу видит размер.</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <label style="font-size:13.5px;font-weight:600;color:#16211C" data-az="Çəki, kq">Вес, кг</label>
+              <input data-az-ph="0,5" placeholder="0,5" style="padding:13px 14px;border:1px solid #DDD7C9;border-radius:9px;font-size:14.5px;color:#16211C;outline:none;background:#FDFCF8" style-focus="border-color:#2F5B47;background:#FFFFFF">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <label style="font-size:13.5px;font-weight:600;color:#16211C" data-az="Ölçü">Габариты</label>
+              <div style="display:flex;gap:6px">
+                <span style="flex:1;text-align:center;padding:13px 0;border-radius:9px;background:#10251C;color:#F6F3EB;font-size:13.5px;font-weight:600;cursor:pointer" data-az="Cibə sığır">В карман</span>
+                <span style="flex:1;text-align:center;padding:13px 0;border-radius:9px;background:#F1EEE4;color:#4A5A50;font-size:13.5px;font-weight:500;cursor:pointer" style-hover="background:#E7E2D6" data-az="Çantaya">В сумку</span>
+                <span style="flex:1;text-align:center;padding:13px 0;border-radius:9px;background:#F1EEE4;color:#4A5A50;font-size:13.5px;font-weight:500;cursor:pointer" style-hover="background:#E7E2D6" data-az="Baqaja">В багаж</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-size:13.5px;font-weight:600;color:#16211C" data-az="Nə vaxta çatdırılmalıdır">Когда нужно доставить</label>
+            <div style="display:flex;align-items:center;gap:10px">
+              <input data-az-ph="20 avqust" placeholder="20 августа" style="flex:1;padding:13px 14px;border:1px solid #DDD7C9;border-radius:9px;font-size:14.5px;color:#16211C;outline:none;background:#FDFCF8" style-focus="border-color:#2F5B47;background:#FFFFFF">
+              <span style="font-size:14px;color:#8A9490">—</span>
+              <input data-az-ph="26 avqust" placeholder="26 августа" style="flex:1;padding:13px 14px;border:1px solid #DDD7C9;border-radius:9px;font-size:14.5px;color:#16211C;outline:none;background:#FDFCF8" style-focus="border-color:#2F5B47;background:#FFFFFF">
+              <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;color:#4A5A50;cursor:pointer;white-space:nowrap">
+                <input type="checkbox" style="width:16px;height:16px;accent-color:#2F5B47">
+                <span data-az="tarixlər çevikdir">даты гибкие</span>
+              </label>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-size:13.5px;font-weight:600;color:#16211C" data-az="Nə qədər ödəyirsiniz">Сколько заплатите</label>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="position:relative;flex:0 0 190px">
+                <input data-az-ph="5 000" placeholder="5 000" style="width:100%;padding:13px 34px 13px 14px;border:1px solid #DDD7C9;border-radius:9px;font-size:14.5px;color:#16211C;outline:none;background:#FDFCF8" style-focus="border-color:#2F5B47;background:#FFFFFF">
+                <span style="position:absolute;right:14px;top:13px;font-size:14.5px;color:#8A9490">₽</span>
+              </div>
+              <sc-if value="{{ showPriceHint }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size:13px;line-height:1.45;color:#8A9490;text-wrap:pretty" data-az="Bu marşrutda orta qiymət — 5 400 ₽. Aşağı qiymətlər adətən 3 gündən çox gözləyir.">Средняя цена по маршруту — 5 400 ₽. Заявки дешевле обычно ждут больше трёх дней.</div>
+              </sc-if>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-size:13.5px;font-weight:600;color:#16211C" data-az="Şərh">Комментарий</label>
+            <textarea data-az-ph="Götürmə və təhvil yerləri, kimə verilməli, digər detallar" placeholder="Где забрать и кому передать, другие детали" style="padding:13px 14px;border:1px solid #DDD7C9;border-radius:9px;font-size:14.5px;color:#16211C;outline:none;background:#FDFCF8;min-height:78px;resize:none;line-height:1.5" style-focus="border-color:#2F5B47;background:#FFFFFF"></textarea>
+          </div>
+
+        </div>
+
+        <div style="padding:18px 32px 24px;display:flex;align-items:center;gap:14px;border-top:1px solid #EFEBE0;margin-top:14px">
+          <button style="padding:13px 26px;border:0;border-radius:9px;background:#1B3A2C;color:#F6F3EB;font-size:14.5px;font-weight:600;cursor:pointer" style-hover="background:#10251C" data-az="Sifarişi dərc et">Опубликовать заявку</button>
+          <button style="padding:13px 20px;border:1px solid #DDD7C9;border-radius:9px;background:transparent;color:#4A5A50;font-size:14.5px;font-weight:500;cursor:pointer" style-hover="border-color:#2F5B47" data-az="Ləğv et">Отмена</button>
+          <div style="flex:1"></div>
+          <div style="font-size:12.5px;color:#8A9490;text-align:right;max-width:230px;line-height:1.45" data-az="Telefonunuz gizli qalır — yalnız şəxsi çatda görünür.">Телефон не публикуется — он виден только в личном чате.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:40px">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#8A9490">03 — Лента · Mobile</div>
+        <div style="width:390px;height:844px;background:#F6F3EB;border-radius:30px;overflow:hidden;position:relative;box-shadow:0 24px 60px -30px rgba(16,37,28,.5),0 0 0 1px rgba(16,37,28,.1)">
+          <div style="background:#10251C;padding:14px 18px 14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;height:22px;margin-bottom:12px">
+              <span style="font-size:12.5px;font-weight:600;color:#F6F3EB">9:41</span>
+              <div style="display:flex;gap:5px;align-items:center">
+                <div style="width:16px;height:9px;border:1px solid rgba(246,243,235,.5);border-radius:2px"></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="display:flex;align-items:baseline;gap:10px">
+                <div style="font-family:'Source Serif 4',Georgia,serif;font-size:21px;font-weight:600;color:#F6F3EB;letter-spacing:.02em">YOL</div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span style="font-size:12.5px;color:#B9C7BD" data-az="Moskva">Москва</span>
+                  <span style="font-size:12px;color:#7E9587">→</span>
+                  <span style="font-size:12.5px;color:#B9C7BD" data-az="Bakı">Баку</span>
+                </div>
+              </div>
+              <div style="display:flex;padding:3px;border-radius:7px;background:rgba(246,243,235,.09);gap:2px">
+                <button data-lang-btn="ru" onClick="{{ setRu }}" style="padding:4px 9px;border:0;border-radius:5px;background:#F6F3EB;color:#10251C;font-size:11.5px;font-weight:600;cursor:pointer">RU</button>
+                <button data-lang-btn="az" onClick="{{ setAz }}" style="padding:4px 9px;border:0;border-radius:5px;background:transparent;color:#B9C7BD;font-size:11.5px;font-weight:600;cursor:pointer">AZ</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sb" style="display:flex;gap:7px;padding:13px 18px;background:#FFFFFF;border-bottom:1px solid #E7E2D6;overflow-x:auto">
+            <span style="padding:7px 13px;border-radius:999px;background:#10251C;color:#F6F3EB;font-size:13px;font-weight:600;white-space:nowrap" data-az="Hamısı · 24">Все · 24</span>
+            <span style="padding:7px 13px;border-radius:999px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500;white-space:nowrap" data-az="Sənədlər">Документы</span>
+            <span style="padding:7px 13px;border-radius:999px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500;white-space:nowrap" data-az="Dərmanlar">Лекарства</span>
+            <span style="padding:7px 13px;border-radius:999px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500;white-space:nowrap" data-az="Elektronika">Электроника</span>
+          </div>
+
+          <div style="padding:14px 18px;display:flex;flex-direction:column;gap:12px">
+
+            <div style="background:#FFFFFF;border:1px solid #E7E2D6;border-radius:12px;padding:14px">
+              <div style="display:flex;gap:13px">
+                <image-slot id="m-feed-1" style="width:86px;height:86px" shape="rounded" radius="9" placeholder="Фото"></image-slot>
+                <div style="flex:1;display:flex;flex-direction:column;gap:7px;min-width:0">
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+                    <div style="font-size:15.5px;font-weight:600;color:#16211C;line-height:1.25" data-az="Sənədlər, A4 qovluq">Документы, папка А4</div>
+                    <div style="font-family:'Source Serif 4',Georgia,serif;font-size:19px;font-weight:600;color:#10251C;white-space:nowrap;line-height:1.1">3 000 ₽</div>
+                  </div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px">
+                    <span style="padding:4px 8px;border-radius:6px;background:#F1EEE4;color:#4A5A50;font-size:12px;font-weight:500">0,3 кг</span>
+                    <span style="padding:4px 8px;border-radius:6px;background:#F1EEE4;color:#4A5A50;font-size:12px;font-weight:500" data-az="24 avqusta qədər">до 24 августа</span>
+                    <span style="padding:4px 8px;border-radius:6px;background:#FBEFDC;color:#8C5A14;font-size:12px;font-weight:600" data-az="Tələsik">Срочно</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:7px">
+                    <div style="width:22px;height:22px;border-radius:50%;background:#E3E9E1;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#2F5B47">МК</div>
+                    <span style="font-size:12.5px;font-weight:600;color:#16211C">Марина К.</span>
+                    <span style="font-size:12px;color:#6B7A70">★ 4,9</span>
+                    <span style="font-size:11.5px;color:#2F5B47;font-weight:600">✓</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:13px">
+                <button data-name="Марина К." data-item="Документы, папка А4" data-price="3 000 ₽" onClick="{{ openChat }}" style="flex:1;padding:12px;border:0;border-radius:9px;background:#1B3A2C;color:#F6F3EB;font-size:14px;font-weight:600;cursor:pointer;min-height:44px" data-az="Çatdırılma təklif et">Предложить доставку</button>
+                <span style="font-size:12px;color:#8A9490;white-space:nowrap" data-az="3 cavab">3 отклика</span>
+              </div>
+            </div>
+
+            <div style="background:#FFFFFF;border:1px solid #E7E2D6;border-radius:12px;padding:14px">
+              <div style="display:flex;gap:13px">
+                <image-slot id="m-feed-2" style="width:86px;height:86px" shape="rounded" radius="9" placeholder="Фото"></image-slot>
+                <div style="flex:1;display:flex;flex-direction:column;gap:7px;min-width:0">
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+                    <div style="font-size:15.5px;font-weight:600;color:#16211C;line-height:1.25" data-az="Aptekdən dərmanlar">Лекарства из аптеки</div>
+                    <div style="font-family:'Source Serif 4',Georgia,serif;font-size:19px;font-weight:600;color:#10251C;white-space:nowrap;line-height:1.1">5 500 ₽</div>
+                  </div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px">
+                    <span style="padding:4px 8px;border-radius:6px;background:#F1EEE4;color:#4A5A50;font-size:12px;font-weight:500">1,2 кг</span>
+                    <span style="padding:4px 8px;border-radius:6px;background:#F1EEE4;color:#4A5A50;font-size:12px;font-weight:500" data-az="20–26 avqust">20–26 августа</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:7px">
+                    <div style="width:22px;height:22px;border-radius:50%;background:#E3E9E1;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#2F5B47">РА</div>
+                    <span style="font-size:12.5px;font-weight:600;color:#16211C">Рустам А.</span>
+                    <span style="font-size:12px;color:#6B7A70">★ 4,7</span>
+                    <span style="font-size:11.5px;color:#2F5B47;font-weight:600">✓</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:13px">
+                <button data-name="Рустам А." data-item="Лекарства из аптеки" data-price="5 500 ₽" onClick="{{ openChat }}" style="flex:1;padding:12px;border:0;border-radius:9px;background:#1B3A2C;color:#F6F3EB;font-size:14px;font-weight:600;cursor:pointer;min-height:44px" data-az="Çatdırılma təklif et">Предложить доставку</button>
+                <span style="font-size:12px;color:#8A9490;white-space:nowrap" data-az="1 cavab">1 отклик</span>
+              </div>
+            </div>
+
+            <div style="background:#FFFFFF;border:1px solid #E7E2D6;border-radius:12px;padding:14px;opacity:.55">
+              <div style="display:flex;gap:13px">
+                <div style="width:86px;height:86px;border-radius:9px;background:#EFEBE0"></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:7px">
+                  <div style="display:flex;justify-content:space-between;gap:8px">
+                    <div style="font-size:15.5px;font-weight:600;color:#16211C" data-az="Noutbuk, qutuda">Ноутбук в коробке</div>
+                    <div style="font-family:'Source Serif 4',Georgia,serif;font-size:19px;font-weight:600;color:#10251C;white-space:nowrap">9 000 ₽</div>
+                  </div>
+                  <div style="display:flex;gap:6px">
+                    <span style="padding:4px 8px;border-radius:6px;background:#F1EEE4;color:#4A5A50;font-size:12px;font-weight:500">2,5 кг</span>
+                    <span style="padding:4px 8px;border-radius:6px;background:#F1EEE4;color:#4A5A50;font-size:12px;font-weight:500" data-az="30 avqusta qədər">до 30 августа</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div style="position:absolute;left:0;right:0;bottom:0;background:#FFFFFF;border-top:1px solid #E7E2D6;padding:10px 18px 22px">
+            <button style="width:100%;padding:14px;border:0;border-radius:10px;background:#B5751F;color:#FFF8EC;font-size:15px;font-weight:600;cursor:pointer;min-height:48px;margin-bottom:10px" data-az="Sifariş yerləşdir">Разместить заявку</button>
+            <div style="display:flex;justify-content:space-between;padding:0 8px">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:56px">
+                <div style="width:18px;height:2px;background:#10251C;border-radius:2px;margin-top:6px"></div>
+                <span style="font-size:11px;font-weight:600;color:#10251C" data-az="Sifarişlər">Заявки</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:56px">
+                <div style="width:18px;height:2px;background:#C3CBC4;border-radius:2px;margin-top:6px"></div>
+                <span style="font-size:11px;color:#8A9490" data-az="Mənimkilər">Мои</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:56px;position:relative">
+                <div style="width:18px;height:2px;background:#C3CBC4;border-radius:2px;margin-top:6px"></div>
+                <span style="font-size:11px;color:#8A9490" data-az="Çatlar">Чаты</span>
+                <div style="position:absolute;top:0;right:6px;width:7px;height:7px;border-radius:50%;background:#B5751F"></div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:56px">
+                <div style="width:18px;height:2px;background:#C3CBC4;border-radius:2px;margin-top:6px"></div>
+                <span style="font-size:11px;color:#8A9490" data-az="Profil">Профиль</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#8A9490">04 — Новая заявка · Mobile</div>
+        <div style="width:390px;height:844px;background:#FFFFFF;border-radius:30px;overflow:hidden;position:relative;box-shadow:0 24px 60px -30px rgba(16,37,28,.5),0 0 0 1px rgba(16,37,28,.1)">
+          <div style="background:#10251C;padding:14px 18px">
+            <div style="display:flex;align-items:center;justify-content:space-between;height:22px;margin-bottom:12px">
+              <span style="font-size:12.5px;font-weight:600;color:#F6F3EB">9:41</span>
+              <div style="width:16px;height:9px;border:1px solid rgba(246,243,235,.5);border-radius:2px"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <span style="font-size:19px;color:#F6F3EB;cursor:pointer">←</span>
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-size:19px;font-weight:600;color:#F6F3EB" data-az="Yeni sifariş">Новая заявка</div>
+              <div style="flex:1"></div>
+              <div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:rgba(246,243,235,.09)">
+                <span style="font-size:11.5px;color:#B9C7BD" data-az="Moskva">Москва</span>
+                <span style="font-size:11px;color:#7E9587">→</span>
+                <span style="font-size:11.5px;color:#B9C7BD" data-az="Bakı">Баку</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding:20px 18px 120px;display:flex;flex-direction:column;gap:19px">
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <label style="font-size:13px;font-weight:600;color:#16211C" data-az="Nə göndərirsiniz">Что нужно передать</label>
+              <input data-az-ph="Məsələn: sənədlər" placeholder="Например: документы" style="padding:14px;border:1px solid #DDD7C9;border-radius:10px;font-size:15px;color:#16211C;outline:none;background:#FDFCF8;min-height:48px" style-focus="border-color:#2F5B47;background:#FFFFFF">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <label style="font-size:13px;font-weight:600;color:#16211C" data-az="Foto">Фото посылки</label>
+              <div style="display:flex;gap:9px">
+                <image-slot id="m-form-1" style="width:96px;height:96px" shape="rounded" radius="9" placeholder="Добавить"></image-slot>
+                <image-slot id="m-form-2" style="width:96px;height:96px" shape="rounded" radius="9" placeholder="Добавить"></image-slot>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <label style="font-size:13px;font-weight:600;color:#16211C" data-az="Çəki və ölçü">Вес и габариты</label>
+              <input data-az-ph="Çəki, kq" placeholder="Вес, кг" style="padding:14px;border:1px solid #DDD7C9;border-radius:10px;font-size:15px;color:#16211C;outline:none;background:#FDFCF8;min-height:48px" style-focus="border-color:#2F5B47;background:#FFFFFF">
+              <div style="display:flex;gap:6px;margin-top:2px">
+                <span style="flex:1;text-align:center;padding:13px 0;border-radius:9px;background:#10251C;color:#F6F3EB;font-size:13px;font-weight:600;min-height:44px;display:flex;align-items:center;justify-content:center" data-az="Cibə">В карман</span>
+                <span style="flex:1;text-align:center;padding:13px 0;border-radius:9px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500;min-height:44px;display:flex;align-items:center;justify-content:center" data-az="Çantaya">В сумку</span>
+                <span style="flex:1;text-align:center;padding:13px 0;border-radius:9px;background:#F1EEE4;color:#4A5A50;font-size:13px;font-weight:500;min-height:44px;display:flex;align-items:center;justify-content:center" data-az="Baqaja">В багаж</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <label style="font-size:13px;font-weight:600;color:#16211C" data-az="Nə vaxta">К какому числу</label>
+              <div style="display:flex;align-items:center;gap:9px">
+                <input data-az-ph="20 avqust" placeholder="20 августа" style="flex:1;min-width:0;padding:14px;border:1px solid #DDD7C9;border-radius:10px;font-size:15px;color:#16211C;outline:none;background:#FDFCF8;min-height:48px" style-focus="border-color:#2F5B47;background:#FFFFFF">
+                <span style="font-size:14px;color:#8A9490">—</span>
+                <input data-az-ph="26 avqust" placeholder="26 августа" style="flex:1;min-width:0;padding:14px;border:1px solid #DDD7C9;border-radius:10px;font-size:15px;color:#16211C;outline:none;background:#FDFCF8;min-height:48px" style-focus="border-color:#2F5B47;background:#FFFFFF">
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <label style="font-size:13px;font-weight:600;color:#16211C" data-az="Nə qədər ödəyirsiniz">Сколько заплатите</label>
+              <div style="position:relative">
+                <input data-az-ph="5 000" placeholder="5 000" style="width:100%;padding:14px 34px 14px 14px;border:1px solid #DDD7C9;border-radius:10px;font-size:15px;color:#16211C;outline:none;background:#FDFCF8;min-height:48px" style-focus="border-color:#2F5B47;background:#FFFFFF">
+                <span style="position:absolute;right:14px;top:15px;font-size:15px;color:#8A9490">₽</span>
+              </div>
+              <sc-if value="{{ showPriceHint }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size:12.5px;color:#8A9490;line-height:1.45" data-az="Marşrut üzrə orta qiymət — 5 400 ₽">Средняя цена по маршруту — 5 400 ₽</div>
+              </sc-if>
+            </div>
+          </div>
+
+          <div style="position:absolute;left:0;right:0;bottom:0;background:#FFFFFF;border-top:1px solid #E7E2D6;padding:14px 18px 24px">
+            <button style="width:100%;padding:15px;border:0;border-radius:10px;background:#1B3A2C;color:#F6F3EB;font-size:15px;font-weight:600;cursor:pointer;min-height:50px" data-az="Sifarişi dərc et">Опубликовать заявку</button>
+            <div style="font-size:11.5px;color:#8A9490;text-align:center;margin-top:9px;line-height:1.4" data-az="Telefonunuz gizli qalır — yalnız şəxsi çatda">Телефон не публикуется — он виден только в личном чате</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeChat }}" style="position:fixed;inset:0;background:rgba(16,37,28,.55);backdrop-filter:blur(3px);z-index:50;display:flex;align-items:center;justify-content:center">
+      <div onClick="{{ stop }}" style="width:452px;background:#F6F3EB;border-radius:16px;overflow:hidden;box-shadow:0 40px 90px -30px rgba(16,37,28,.7)">
+        <div style="background:#10251C;padding:18px 20px;display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(246,243,235,.14);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#F6F3EB">{{ chatInitials }}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14.5px;font-weight:600;color:#F6F3EB">{{ chatName }}</div>
+            <div style="font-size:12px;color:#93A897" data-az="şəxsi çat · yalnız siz ikiniz">личный чат · только вы двое</div>
+          </div>
+          <span onClick="{{ closeChat }}" style="font-size:20px;color:#93A897;cursor:pointer;padding:0 4px">×</span>
+        </div>
+        <div style="padding:16px 20px 20px;display:flex;flex-direction:column;gap:12px">
+          <div style="background:#EFEBE0;border-radius:9px;padding:11px 13px;display:flex;justify-content:space-between;align-items:center;gap:12px">
+            <div style="font-size:13px;color:#4A5A50;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ chatItem }}</div>
+            <div style="font-family:'Source Serif 4',Georgia,serif;font-size:15px;font-weight:600;color:#10251C;white-space:nowrap">{{ chatPrice }}</div>
+          </div>
+          <div style="align-self:flex-end;max-width:82%;background:#1B3A2C;color:#F1F5F0;font-size:14px;line-height:1.45;padding:11px 14px;border-radius:12px 12px 4px 12px" data-az="Salam! 23 avqust axşamı Bakıya uçuram, əl yükümdə yer var. Sizə uyğundur?">Здравствуйте! Лечу в Баку 23 августа вечером, место в ручной клади есть. Вам подходит?</div>
+          <div style="align-self:flex-start;max-width:82%;background:#FFFFFF;border:1px solid #E7E2D6;color:#16211C;font-size:14px;line-height:1.45;padding:11px 14px;border-radius:12px 12px 12px 4px" data-az="Bəli, uyğundur. Sənədləri 22-də metronun yanında verə bilərəm.">Да, подходит. Могу передать папку 22-го у метро, напишу адрес здесь.</div>
+          <div style="display:flex;align-items:center;gap:9px;margin-top:2px">
+            <input data-az-ph="Mesaj yazın" placeholder="Написать сообщение" style="flex:1;padding:12px 14px;border:1px solid #DDD7C9;border-radius:10px;font-size:14px;color:#16211C;outline:none;background:#FFFFFF" style-focus="border-color:#2F5B47">
+            <button style="padding:12px 18px;border:0;border-radius:10px;background:#1B3A2C;color:#F6F3EB;font-size:14px;font-weight:600;cursor:pointer" data-az="Göndər">Отправить</button>
+          </div>
+          <div style="font-size:12px;color:#8A9490;line-height:1.45;text-wrap:pretty" data-az="Telefon nömrələri və ünvanlar yalnız bu çatda görünür. Sifariş lentədə açıq qalır.">Телефоны и адреса видны только в этом чате. Заявка остаётся в ленте, пока отправитель не выберет пассажира.</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startLang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;ru&quot;,&quot;az&quot;],&quot;default&quot;:&quot;ru&quot;,&quot;tsType&quot;:&quot;'ru' | 'az'&quot;,&quot;section&quot;:&quot;Content&quot;},&quot;showHowItWorks&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Content&quot;},&quot;showPriceHint&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Content&quot;}}">
+class Component extends DCLogic {
+  state = { chat: null, lang: this.props.startLang || 'ru' };
+  root = React.createRef();
+
+  componentDidMount() { this.applyLang(); }
+  componentDidUpdate() { this.applyLang(); }
+
+  applyLang() {
+    const root = this.root.current;
+    if (!root) return;
+    const az = this.state.lang === 'az';
+    root.querySelectorAll('[data-az]').forEach(el => {
+      if (el.dataset.ru === undefined) el.dataset.ru = el.textContent;
+      const next = az ? el.dataset.az : el.dataset.ru;
+      if (el.textContent !== next) el.textContent = next;
+    });
+    root.querySelectorAll('[data-az-ph]').forEach(el => {
+      if (el.dataset.ruPh === undefined) el.dataset.ruPh = el.placeholder || '';
+      el.placeholder = az ? el.dataset.azPh : el.dataset.ruPh;
+    });
+    root.querySelectorAll('[data-lang-btn]').forEach(el => {
+      const on = el.dataset.langBtn === this.state.lang;
+      el.style.background = on ? '#F6F3EB' : 'transparent';
+      el.style.color = on ? '#10251C' : '#B9C7BD';
+    });
+  }
+
+  renderVals() {
+    const c = this.state.chat;
+    return {
+      rootRef: this.root,
+      showHowItWorks: this.props.showHowItWorks !== false,
+      showPriceHint: this.props.showPriceHint !== false,
+      chatOpen: !!c,
+      chatName: c ? c.name : '',
+      chatItem: c ? c.item : '',
+      chatPrice: c ? c.price : '',
+      chatInitials: c ? c.name.split(' ').map(w => w[0]).join('') : '',
+      openChat: e => {
+        const d = e.currentTarget.dataset;
+        this.setState({ chat: { name: d.name, item: d.item, price: d.price } });
+      },
+      closeChat: () => this.setState({ chat: null }),
+      stop: e => e.stopPropagation(),
+      setRu: () => this.setState({ lang: 'ru' }),
+      setAz: () => this.setState({ lang: 'az' })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+// YOL — доска заявок на передачу посылок Москва → Баку.
+// Площадка не является стороной сделки: сводит отправителя и путешественника, дальше они сами.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Category {
+  DOCUMENTS
+  MEDICINE
+  ELECTRONICS
+  CLOTHES
+  OTHER
+}
+
+/// Габариты задаются пресетом, а не сантиметрами: людям проще выбрать «в сумку».
+enum SizePreset {
+  POCKET
+  BAG
+  LUGGAGE
+}
+
+enum ListingStatus {
+  ACTIVE
+  MATCHED
+  DONE
+  CANCELLED
+  EXPIRED
+}
+
+enum ResponseStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model User {
+  id         String  @id @default(cuid())
+  /// Telegram id не влезает в Int — только BigInt.
+  telegramId BigInt  @unique
+  username   String?
+  firstName  String
+  lastName   String?
+  photoUrl   String?
+  /// Телефон нигде не публикуется, живёт только в личном чате.
+  phone      String?
+
+  locale          String  @default("ru")
+  soundEnabled    Boolean @default(true)
+  notifyEnabled   Boolean @default(true)
+  deliveriesCount Int     @default(0)
+  ratingSum       Int     @default(0)
+  ratingCount     Int     @default(0)
+
+  acceptedTermsAt DateTime?
+  createdAt       DateTime  @default(now())
+
+  listings          Listing[]
+  responses         Response[]
+  threadsAsSender   Thread[]   @relation("ThreadSender")
+  threadsAsTraveler Thread[]   @relation("ThreadTraveler")
+  messages          Message[]
+  reportsMade       Report[]   @relation("ReportAuthor")
+}
+
+model Listing {
+  id       String @id @default(cuid())
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  category    Category
+  title       String
+  description String?
+
+  weightKg   Decimal?    @db.Decimal(5, 2)
+  sizePreset SizePreset?
+  dimensions String?
+
+  /// deadlineFrom пустой — значит «до такого-то числа», без нижней границы.
+  deadlineFrom DateTime?
+  deadlineTo   DateTime
+  pickupArea   String?
+
+  priceRub Int
+  photoUrl String?
+
+  urgent       Boolean @default(false)
+  fragile      Boolean @default(false)
+  needsLuggage Boolean @default(false)
+
+  status    ListingStatus @default(ACTIVE)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  responses Response[]
+  threads   Thread[]
+  reports   Report[]
+
+  @@index([status, createdAt])
+  @@index([status, category])
+  @@index([authorId])
+}
+
+model Response {
+  id        String  @id @default(cuid())
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  travelerId String
+  traveler   User   @relation(fields: [travelerId], references: [id], onDelete: Cascade)
+
+  status    ResponseStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+
+  /// Откликнуться на одну заявку можно только раз.
+  @@unique([listingId, travelerId])
+  @@index([travelerId])
+}
+
+model Thread {
+  id        String  @id @default(cuid())
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation("ThreadSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  travelerId String
+  traveler   User   @relation("ThreadTraveler", fields: [travelerId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime @default(now())
+  lastMessageAt DateTime @default(now())
+
+  messages Message[]
+
+  @@unique([listingId, travelerId])
+  @@index([senderId, lastMessageAt])
+  @@index([travelerId, lastMessageAt])
+}
+
+model Message {
+  id       String @id @default(cuid())
+  threadId String
+  thread   Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  text      String
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@index([threadId, createdAt])
+}
+
+model Report {
+  id        String  @id @default(cuid())
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation("ReportAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@unique([listingId, authorId])
+}
