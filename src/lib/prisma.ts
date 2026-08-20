@@ -41,6 +41,25 @@ function createClient(): PrismaClient {
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? createClient();
+function getClient(): PrismaClient {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createClient();
+  }
+  return globalForPrisma.prisma;
+}
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+/**
+ * Клиент создаётся при первом обращении, а не при импорте модуля.
+ *
+ * `next build` импортирует все роуты, чтобы собрать их конфигурацию. При
+ * жадной инициализации сборка требовала бы живого DATABASE_URL — и падала
+ * на этапе, где к базе никто ещё не обращается. Прокси откладывает создание
+ * клиента до первого реального запроса.
+ */
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop, receiver) {
+    const client = getClient();
+    const value = Reflect.get(client, prop, receiver);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});
