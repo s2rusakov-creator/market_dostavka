@@ -89,8 +89,29 @@ export function configuredProviders(): ProviderId[] {
   return (["google", "mailru"] as ProviderId[]).filter(isConfigured);
 }
 
+/**
+ * Адрес возврата.
+ *
+ * Берём канонический адрес сайта, а не адрес текущего запроса. У Vercel
+ * каждый деплой доступен ещё и по личной ссылке с хешем, и если открыть
+ * приложение по ней, адрес возврата получится другим — провайдер такой не
+ * узнает и ответит bad redirect_uri / redirect_uri_mismatch. Регистрировать
+ * же в настройках приложения все возможные ссылки невозможно: они новые
+ * на каждый деплой.
+ */
 export function redirectUri(origin: string, id: ProviderId): string {
-  return `${origin}/api/auth/oauth/${id}/callback`;
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
+
+  let base = origin;
+  if (configured) {
+    try {
+      base = new URL(configured).origin;
+    } catch {
+      // Переменная задана мусором — молча остаёмся на адресе запроса.
+    }
+  }
+
+  return `${base}/api/auth/oauth/${id}/callback`;
 }
 
 export function randomToken(bytes = 32): string {
