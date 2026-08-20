@@ -26,7 +26,9 @@ export function TelegramLoginButton({
     script.async = true;
     script.setAttribute("data-telegram-login", botUsername);
     script.setAttribute("data-size", size);
-    script.setAttribute("data-radius", "9");
+    // Скругление делаем сами на обёртке. Если попросить его у виджета, он
+    // рисует кнопку меньше своего iframe, и по углам вылезает тёмный фон.
+    script.setAttribute("data-radius", "0");
     script.setAttribute("data-userpic", "false");
     script.setAttribute("data-request-access", "write");
     script.setAttribute(
@@ -43,5 +45,15 @@ export function TelegramLoginButton({
     };
   }, [botUsername, size]);
 
-  return <div ref={ref} className="min-h-[40px]" />;
+  return (
+    <div className="flex justify-center">
+      {/* overflow-hidden обрезает углы iframe — иначе из-под скруглённой
+          кнопки виден тёмный фон виджета. [&_iframe]:block убирает зазор
+          под строкой, который даёт inline-элемент. */}
+      <div
+        ref={ref}
+        className="min-h-[40px] overflow-hidden rounded-lg [&_iframe]:block"
+      />
+    </div>
+  );
 }

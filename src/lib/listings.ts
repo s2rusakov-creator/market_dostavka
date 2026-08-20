@@ -13,11 +13,22 @@ const ORDER: Record<Sort, Record<string, "asc" | "desc">> = {
 };
 
 /**
- * Протухшие заявки гасим при чтении ленты — отдельный планировщик ради
- * одной операции разворачивать не стоит, а пустая лента из мёртвых заявок
- * убивает доверие быстрее всего.
+ * Протухшие заявки гасим при чтении ленты — отдельный планировщик ради одной
+ * операции разворачивать не стоит.
+ *
+ * Но выполнять запись на каждый показ ленты незачем: сама лента отфильтрована
+ * по сроку и без этого, а лишний round-trip до базы стоит дорого — функции и
+ * база могут стоять в разных регионах. Поэтому чистим не чаще раза в 5 минут
+ * на экземпляр функции.
  */
+const EXPIRE_INTERVAL_MS = 5 * 60 * 1000;
+let lastExpireRun = 0;
+
 async function expireOverdue(): Promise<void> {
+  const now = Date.now();
+  if (now - lastExpireRun < EXPIRE_INTERVAL_MS) return;
+  lastExpireRun = now;
+
   await prisma.listing.updateMany({
     where: { status: "ACTIVE", deadlineTo: { lt: new Date() } },
     data: { status: "EXPIRED" },
@@ -38,6 +49,9 @@ export async function getFeed(params: {
   const listings = await prisma.listing.findMany({
     where: {
       status: "ACTIVE",
+      // Фильтр по сроку здесь, а не только в expireOverdue: тогда просроченная
+      // заявка исчезает из ленты сразу, не дожидаясь фоновой чистки.
+      deadlineTo: { gte: new Date() },
       ...(params.category ? { category: params.category as Category } : {}),
     },
     orderBy: ORDER[sort],
@@ -94,26 +108,40 @@ export async function getFeed(params: {
   }));
 }
 
+/**
+ * Три показателя одним запросом.
+ *
+ * Раньше это были три отдельных обращения к базе. Между регионами каждый
+ * round-trip стоит около сотни миллисекунд, и на них уходило больше времени,
+ * чем на саму работу — а Postgres считает всё это за один проход по таблице.
+ */
 export async function getStats(): Promise<{
   active: number;
   avgPrice: number;
   newToday: number;
 }> {
-  const dayAgo = new Date(Date.now() - 24 * 3600e3);
+  const rows = await prisma.$queryRaw<
+    { active: number; avg: number | null; newToday: number }[]
+  >`
+    SELECT
+      count(*) FILTER (
+        WHERE "status" = 'ACTIVE' AND "deadlineTo" >= now()
+      )::int AS active,
+      avg("priceRub") FILTER (
+        WHERE "status" = 'ACTIVE' AND "deadlineTo" >= now()
+      )::float8 AS avg,
+      count(*) FILTER (
+        WHERE "createdAt" >= now() - interval '24 hours'
+      )::int AS "newToday"
+    FROM "Listing"
+  `;
 
-  const [active, avg, newToday] = await Promise.all([
-    prisma.listing.count({ where: { status: "ACTIVE" } }),
-    prisma.listing.aggregate({
-      where: { status: "ACTIVE" },
-      _avg: { priceRub: true },
-    }),
-    prisma.listing.count({ where: { createdAt: { gte: dayAgo } } }),
-  ]);
+  const row = rows[0];
 
   return {
-    active,
+    active: row?.active ?? 0,
     // Пока заявок нет, показываем ориентир из макета, а не ноль.
-    avgPrice: Math.round(avg._avg.priceRub ?? FALLBACK_AVG_PRICE),
-    newToday,
+    avgPrice: Math.round(row?.avg ?? FALLBACK_AVG_PRICE),
+    newToday: row?.newToday ?? 0,
   };
 }
