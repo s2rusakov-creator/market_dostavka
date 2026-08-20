@@ -92,10 +92,38 @@ export function ChatView({
       }
     }
 
-    const timer = setInterval(poll, POLL_MS);
+    let timer: ReturnType<typeof setInterval> | null = null;
+
+    const start = () => {
+      if (timer === null) timer = setInterval(poll, POLL_MS);
+    };
+    const stop = () => {
+      if (timer !== null) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+
+    // В свёрнутой вкладке опрашивать нечего: человек всё равно не смотрит,
+    // а запрос каждые пять секунд — самая дорогая часть приложения на
+    // бесплатном тарифе. Возвращаясь, догоняем пропущенное сразу, не
+    // дожидаясь очередного тика.
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        void poll();
+        start();
+      }
+    };
+
+    if (!document.hidden) start();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     return () => {
       cancelled = true;
-      clearInterval(timer);
+      stop();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [threadId, play, scrollToBottom]);
 
