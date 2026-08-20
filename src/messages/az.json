@@ -28,7 +28,13 @@
     "signInVia": "Telegram ilə daxil ol",
     "signInPrompt": "Sifariş yerləşdirmək və ya cavab vermək üçün Telegram ilə daxil olun",
     "signOut": "Çıxış",
-    "widgetUnavailable": "Giriş düyməsi qurulmayıb: NEXT_PUBLIC_TELEGRAM_BOT_USERNAME təyin edilməyib"
+    "widgetUnavailable": "Giriş düyməsi qurulmayıb: NEXT_PUBLIC_TELEGRAM_BOT_USERNAME təyin edilməyib",
+    "waiting": "Təsdiq gözlənilir…",
+    "waitingHint": "Telegram-ı açın və botda «Start» düyməsini basın. Təsdiqləyən kimi sizi sayta qaytaracağıq.",
+    "openInBrowser": "Tətbiq açılmadı? Linki açın",
+    "linkExpired": "Link köhnəlib. «Daxil ol» düyməsini yenidən basın.",
+    "startFailed": "Girişi başlatmaq alınmadı. Yenidən cəhd edin.",
+    "widgetFallback": "İşləmir? Telegram düyməsini sınayın"
   },
   "feed": {
     "activeCount": "{count, plural, =0 {aktiv sifariş yoxdur} other {# aktiv sifariş}}",

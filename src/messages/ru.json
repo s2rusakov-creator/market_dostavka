@@ -28,7 +28,13 @@
     "signInVia": "Войти через Telegram",
     "signInPrompt": "Войдите через Telegram, чтобы разместить заявку или откликнуться",
     "signOut": "Выйти",
-    "widgetUnavailable": "Кнопка входа не настроена: не задан NEXT_PUBLIC_TELEGRAM_BOT_USERNAME"
+    "widgetUnavailable": "Кнопка входа не настроена: не задан NEXT_PUBLIC_TELEGRAM_BOT_USERNAME",
+    "waiting": "Ждём подтверждения…",
+    "waitingHint": "Откройте Telegram и нажмите «Старт» у бота. Как только подтвердите — вернём вас на сайт.",
+    "openInBrowser": "Не открылось приложение? Открыть ссылку",
+    "linkExpired": "Ссылка устарела. Нажмите «Войти» ещё раз.",
+    "startFailed": "Не удалось начать вход. Попробуйте ещё раз.",
+    "widgetFallback": "Не работает? Попробуйте кнопку Telegram"
   },
   "feed": {
     "activeCount": "{count, plural, =0 {нет активных заявок} one {# активная заявка} few {# активные заявки} other {# активных заявок}}",

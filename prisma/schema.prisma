@@ -171,3 +171,23 @@ model Report {
 
   @@unique([listingId, authorId])
 }
+
+/// Одноразовый код для входа через диплинк бота.
+/// Виджет Telegram грузится с telegram.org, который в России недоступен, —
+/// поэтому основной путь входа идёт через ссылку tg://, её обрабатывает
+/// установленное приложение, минуя сайты Telegram.
+model LoginCode {
+  /// Сам код, он же первичный ключ: короткий, но с достаточной энтропией.
+  code String @id
+
+  /// Заполняются, когда бот получил /start с этим кодом.
+  telegramId BigInt?
+  userId     String?
+
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime
+  /// Проставляется при обмене кода на сессию — повторно использовать нельзя.
+  consumedAt DateTime?
+
+  @@index([expiresAt])
+}

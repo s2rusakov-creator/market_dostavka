@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { botUsername } from "@/lib/env";
+import { TelegramDeepLogin } from "@/components/TelegramDeepLogin";
 import { TelegramLoginButton } from "@/components/TelegramLoginButton";
 import { DevLogin } from "@/components/DevLogin";
 import { localePath, type Locale } from "@/i18n/routing";
@@ -31,15 +32,27 @@ export default async function LoginPage({
           {t("signInPrompt")}
         </p>
 
-        <div className="mt-5">
-          {botUsername ? (
-            <TelegramLoginButton botUsername={botUsername} />
-          ) : (
-            <p className="rounded-lg bg-ochre/10 p-3 text-[13px] text-ochre">
-              {t("widgetUnavailable")}
-            </p>
-          )}
-        </div>
+        {botUsername ? (
+          <div className="mt-5 flex flex-col gap-5">
+            {/* Основной путь: ссылка tg:// открывает установленное приложение
+                и не зависит от доступности сайтов Telegram. */}
+            <TelegramDeepLogin />
+
+            {/* Запасной: официальный виджет. Он грузится с telegram.org,
+                поэтому у части пользователей не появится вовсе — тогда
+                на его месте просто ничего не отрисуется. */}
+            <div className="border-t border-ink/10 pt-4">
+              <p className="mb-2 text-center text-[12px] text-stone">
+                {t("widgetFallback")}
+              </p>
+              <TelegramLoginButton botUsername={botUsername} size="medium" />
+            </div>
+          </div>
+        ) : (
+          <p className="mt-5 rounded-lg bg-ochre/10 p-3 text-[13px] text-ochre">
+            {t("widgetUnavailable")}
+          </p>
+        )}
 
         {devLoginAllowed && <DevLogin />}
       </div>
