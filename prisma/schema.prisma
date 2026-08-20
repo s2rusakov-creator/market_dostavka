@@ -40,15 +40,26 @@ enum ResponseStatus {
 }
 
 model User {
-  id         String  @id @default(cuid())
+  id String @id @default(cuid())
+
   /// Telegram id не влезает в Int — только BigInt.
-  telegramId BigInt  @unique
+  /// Необязателен: войти можно и через почту, тогда Telegram не привязан.
+  telegramId BigInt? @unique
   username   String?
-  firstName  String
-  lastName   String?
-  photoUrl   String?
+
+  /// Почта — второй способ входа и ключ склейки аккаунтов: вход через Google
+  /// и через пароль с одним адресом должны вести в один и тот же профиль.
+  email           String?   @unique
+  emailVerifiedAt DateTime?
+  /// scrypt: соль и хеш в одной строке. Пусто у тех, кто входит только
+  /// через Telegram или OAuth.
+  passwordHash    String?
+
+  firstName String
+  lastName  String?
+  photoUrl  String?
   /// Телефон нигде не публикуется, живёт только в личном чате.
-  phone      String?
+  phone     String?
 
   locale          String  @default("ru")
   soundEnabled    Boolean @default(true)
@@ -57,15 +68,20 @@ model User {
   ratingSum       Int     @default(0)
   ratingCount     Int     @default(0)
 
+  /// Защита от перебора пароля: счётчик неудач и время до разблокировки.
+  failedLoginCount Int       @default(0)
+  lockedUntil      DateTime?
+
   acceptedTermsAt DateTime?
   createdAt       DateTime  @default(now())
 
   listings          Listing[]
   responses         Response[]
-  threadsAsSender   Thread[]   @relation("ThreadSender")
-  threadsAsTraveler Thread[]   @relation("ThreadTraveler")
+  threadsAsSender   Thread[]       @relation("ThreadSender")
+  threadsAsTraveler Thread[]       @relation("ThreadTraveler")
   messages          Message[]
-  reportsMade       Report[]   @relation("ReportAuthor")
+  reportsMade       Report[]       @relation("ReportAuthor")
+  oauthAccounts     OAuthAccount[]
 }
 
 model Listing {
@@ -190,4 +206,25 @@ model LoginCode {
   consumedAt DateTime?
 
   @@index([expiresAt])
+}
+
+/// Привязка внешнего аккаунта (Google, Mail.ru) к пользователю.
+/// Отдельной таблицей, а не колонками в User: провайдеров может стать больше,
+/// и один человек вправе привязать сразу несколько.
+model OAuthAccount {
+  id String @id @default(cuid())
+
+  /// "google" | "mailru"
+  provider          String
+  /// Идентификатор пользователя у провайдера. Именно он, а не почта:
+  /// почту в некоторых аккаунтах можно сменить.
+  providerAccountId String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
 }

@@ -5,7 +5,9 @@ import { getSessionUserId } from "./session";
 
 export type CurrentUser = {
   id: string;
-  telegramId: bigint;
+  telegramId: bigint | null;
+  email: string | null;
+  emailVerifiedAt: Date | null;
   firstName: string;
   lastName: string | null;
   username: string | null;
@@ -28,6 +30,8 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     select: {
       id: true,
       telegramId: true,
+      email: true,
+      emailVerifiedAt: true,
       firstName: true,
       lastName: true,
       username: true,

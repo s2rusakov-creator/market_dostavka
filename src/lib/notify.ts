@@ -50,7 +50,8 @@ export async function notifyNewResponse(params: {
     where: { id: params.recipientId },
     select: { telegramId: true, locale: true, notifyEnabled: true },
   });
-  if (!user || !user.notifyEnabled) return;
+  // Уведомлять некуда, если человек пришёл через почту и Telegram не привязал.
+  if (!user || !user.notifyEnabled || !user.telegramId) return;
 
   const t = texts(user.locale);
   const url = link(user.locale, `/chats/${params.threadId}`);
@@ -71,7 +72,8 @@ export async function notifyNewMessage(params: {
     where: { id: params.recipientId },
     select: { telegramId: true, locale: true, notifyEnabled: true },
   });
-  if (!user || !user.notifyEnabled) return;
+  // Уведомлять некуда, если человек пришёл через почту и Telegram не привязал.
+  if (!user || !user.notifyEnabled || !user.telegramId) return;
 
   const t = texts(user.locale);
   const url = link(user.locale, `/chats/${params.threadId}`);

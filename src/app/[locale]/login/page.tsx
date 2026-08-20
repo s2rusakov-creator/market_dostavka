@@ -4,13 +4,26 @@ import { getCurrentUser } from "@/lib/auth";
 import { botUsername } from "@/lib/env";
 import { TelegramDeepLogin } from "@/components/TelegramDeepLogin";
 import { TelegramLoginButton } from "@/components/TelegramLoginButton";
+import { OAuthButtons } from "@/components/OAuthButtons";
+import { EmailAuthForm } from "@/components/EmailAuthForm";
 import { DevLogin } from "@/components/DevLogin";
 import { localePath, type Locale } from "@/i18n/routing";
 
+/** Коды, которые возвращают OAuth-роуты в ?error=. */
+const ERROR_KEYS: Record<string, string> = {
+  provider: "errOauth",
+  state: "errOauth",
+  oauth: "errOauth",
+  cancelled: "errCancelled",
+  telegram: "errOauth",
+};
+
 export default async function LoginPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -18,12 +31,17 @@ export default async function LoginPage({
   const user = await getCurrentUser();
   if (user) redirect(localePath(locale, "/"));
 
-  const t = await getTranslations({ locale, namespace: "auth" });
+  const [t, { error }] = await Promise.all([
+    getTranslations({ locale, namespace: "auth" }),
+    searchParams,
+  ]);
+
   const devLoginAllowed =
     process.env.NODE_ENV !== "production" && process.env.ALLOW_DEV_LOGIN === "1";
+  const errorKey = error ? ERROR_KEYS[error] : null;
 
   return (
-    <div className="mx-auto max-w-md px-4 py-16">
+    <div className="mx-auto max-w-md px-4 py-10 md:py-16">
       <div className="rounded-xl bg-cream p-6 ring-1 ring-ink/8">
         <h1 className="font-serif text-2xl font-semibold text-ink">
           {t("signIn")}
@@ -32,27 +50,34 @@ export default async function LoginPage({
           {t("signInPrompt")}
         </p>
 
-        {botUsername ? (
-          <div className="mt-5 flex flex-col gap-5">
-            {/* Основной путь: ссылка tg:// открывает установленное приложение
-                и не зависит от доступности сайтов Telegram. */}
-            <TelegramDeepLogin />
+        {errorKey && (
+          <p className="mt-4 rounded-lg bg-danger/10 p-3 text-[13px] text-danger">
+            {t(errorKey as "errOauth")}
+          </p>
+        )}
 
-            {/* Запасной: официальный виджет. Он грузится с telegram.org,
-                поэтому у части пользователей не появится вовсе — тогда
-                на его месте просто ничего не отрисуется. */}
+        <div className="mt-5 flex flex-col gap-4">
+          {botUsername && <TelegramDeepLogin />}
+
+          <OAuthButtons locale={locale} />
+
+          <div className="flex items-center gap-3">
+            <span className="h-px flex-1 bg-ink/10" />
+            <span className="text-[12px] text-stone">{t("orEmail")}</span>
+            <span className="h-px flex-1 bg-ink/10" />
+          </div>
+
+          <EmailAuthForm />
+
+          {botUsername && (
             <div className="border-t border-ink/10 pt-4">
               <p className="mb-2 text-center text-[12px] text-stone">
                 {t("widgetFallback")}
               </p>
               <TelegramLoginButton botUsername={botUsername} size="medium" />
             </div>
-          </div>
-        ) : (
-          <p className="mt-5 rounded-lg bg-ochre/10 p-3 text-[13px] text-ochre">
-            {t("widgetUnavailable")}
-          </p>
-        )}
+          )}
+        </div>
 
         {devLoginAllowed && <DevLogin />}
       </div>
