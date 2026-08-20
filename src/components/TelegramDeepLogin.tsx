@@ -86,9 +86,16 @@ export function TelegramDeepLogin() {
         type="button"
         onClick={start}
         disabled={phase === "waiting"}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-pine px-5 py-3 text-[15px] font-semibold text-cream transition hover:bg-ink disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-ink/15 bg-white/70 px-5 py-3 text-[15px] font-semibold text-ink transition hover:border-ink/30 disabled:opacity-60"
       >
-        <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden>
+        {/* Значок оставлен фирменного цвета — как логотипы Google и Mail.ru
+            на соседних кнопках: так способ входа узнаётся быстрее. */}
+        <svg
+          viewBox="0 0 24 24"
+          fill="#2AABEE"
+          className="h-[18px] w-[18px]"
+          aria-hidden
+        >
           <path d="M21.9 4.3 18.6 20c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.35-.1-.55-.6-.2L6.2 13.1 1.4 11.6c-1-.3-1-1 .2-1.5L20.6 2.8c.9-.3 1.6.2 1.3 1.5z" />
         </svg>
         {phase === "waiting" ? t("waiting") : t("signInVia")}
