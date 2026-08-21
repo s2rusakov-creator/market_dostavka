@@ -105,7 +105,9 @@
     "statusCANCELLED": "Отменена",
     "statusEXPIRED": "Срок истёк",
     "markDone": "Отметить доставленной",
-    "cancelListing": "Снять с публикации"
+    "cancelListing": "Снять с публикации",
+    "whoDelivered": "Кто привёз?",
+    "cancelChoice": "Не сейчас"
   },
   "newListing": {
     "title": "Новая заявка",

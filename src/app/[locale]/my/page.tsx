@@ -3,7 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatDateUntil, formatPrice } from "@/lib/format";
+import { displayName, formatDateUntil, formatPrice } from "@/lib/format";
 import { ListingActions } from "@/components/ListingActions";
 import { localePath, type Locale } from "@/i18n/routing";
 
@@ -25,7 +25,14 @@ export default async function MyPage({
       where: { authorId: user.id },
       orderBy: { createdAt: "desc" },
       take: 50,
-      include: { _count: { select: { responses: true } } },
+      include: {
+        _count: { select: { responses: true } },
+        responses: {
+          select: {
+            traveler: { select: { id: true, firstName: true, lastName: true } },
+          },
+        },
+      },
     }),
     prisma.thread.findMany({
       where: { travelerId: user.id },
@@ -90,7 +97,14 @@ export default async function MyPage({
                   <span className="text-[13px] text-stone">
                     {t("listing.responsesCount", { count: l._count.responses })}
                   </span>
-                  <ListingActions id={l.id} status={l.status} />
+                  <ListingActions
+                    id={l.id}
+                    status={l.status}
+                    responders={l.responses.map((r) => ({
+                      id: r.traveler.id,
+                      name: displayName(r.traveler.firstName, r.traveler.lastName),
+                    }))}
+                  />
                 </div>
               </li>
             ))}

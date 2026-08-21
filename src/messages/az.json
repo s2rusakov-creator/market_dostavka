@@ -105,7 +105,9 @@
     "statusCANCELLED": "Ləğv edilib",
     "statusEXPIRED": "Müddət bitib",
     "markDone": "Çatdırıldı kimi işarələ",
-    "cancelListing": "Dərcdən çıxar"
+    "cancelListing": "Dərcdən çıxar",
+    "whoDelivered": "Kim gətirdi?",
+    "cancelChoice": "İndi yox"
   },
   "newListing": {
     "title": "Yeni sifariş",

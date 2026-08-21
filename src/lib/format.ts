@@ -142,7 +142,10 @@ export function displayName(
   firstName: string,
   lastName?: string | null
 ): string {
-  return lastName ? `${firstName} ${lastName[0].toUpperCase()}.` : firstName;
+  // Из профилей Telegram и OAuth фамилия иногда приходит пробелами: без
+  // обрезки получалось «Артём  .».
+  const surname = lastName?.trim();
+  return surname ? `${firstName} ${surname[0].toUpperCase()}.` : firstName;
 }
 
 export function rating(sum: number, count: number): string | null {
