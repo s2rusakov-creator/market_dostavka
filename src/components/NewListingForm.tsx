@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
-import { CATEGORIES, SIZE_PRESETS, MAX_PHOTO_BYTES } from "@/lib/constants";
+import {
+  CATEGORIES,
+  SIZE_PRESETS,
+  MAX_PHOTO_BYTES,
+  MAX_SOURCE_BYTES,
+} from "@/lib/constants";
+import { compressImage } from "@/lib/imageCompression";
 import { formatPrice } from "@/lib/format";
 import type { Locale } from "@/i18n/routing";
 
@@ -30,6 +36,7 @@ export function NewListingForm({ avgPrice }: { avgPrice: number }) {
 
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
 
@@ -41,15 +48,29 @@ export function NewListingForm({ avgPrice }: { avgPrice: number }) {
       setErrors((p) => ({ ...p, photo: t("newListing.errors.photoType") }));
       return;
     }
-    if (file.size > MAX_PHOTO_BYTES) {
+    // Заведомо неподъёмное не пытаемся даже раскодировать: браузер на телефоне
+    // на таком просто ляжет.
+    if (file.size > MAX_SOURCE_BYTES) {
+      setErrors((p) => ({ ...p, photo: t("newListing.errors.photoTooBig") }));
+      return;
+    }
+
+    setErrors((p) => ({ ...p, photo: undefined }));
+
+    // Сжимаем до проверки лимита: снимок с телефона весит 3–8 МБ и не прошёл
+    // бы её, хотя после уменьшения занимает пару сотен килобайт.
+    setProcessing(true);
+    const prepared = await compressImage(file);
+    setProcessing(false);
+
+    if (prepared.size > MAX_PHOTO_BYTES) {
       setErrors((p) => ({ ...p, photo: t("newListing.errors.photoTooBig") }));
       return;
     }
 
     setUploading(true);
-    setErrors((p) => ({ ...p, photo: undefined }));
     const form = new FormData();
-    form.append("file", file);
+    form.append("file", prepared);
     const res = await fetch("/api/upload", { method: "POST", body: form });
     setUploading(false);
 
@@ -174,11 +195,13 @@ export function NewListingForm({ avgPrice }: { avgPrice: number }) {
         <Field label={t("newListing.photo")} error={errors.photo}>
           <div className="flex items-center gap-3">
             <label className="cursor-pointer rounded-lg border border-dashed border-ink/25 px-4 py-2.5 text-[13.5px] font-medium text-slate transition hover:border-pine hover:text-pine">
-              {uploading
-                ? t("common.loading")
-                : photoUrl
-                  ? t("newListing.photoReplace")
-                  : t("newListing.photoAdd")}
+              {processing
+                ? t("newListing.photoProcessing")
+                : uploading
+                  ? t("common.loading")
+                  : photoUrl
+                    ? t("newListing.photoReplace")
+                    : t("newListing.photoAdd")}
               <input
                 type="file"
                 accept="image/*"
@@ -327,7 +350,7 @@ export function NewListingForm({ avgPrice }: { avgPrice: number }) {
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="submit"
-            disabled={busy || uploading}
+            disabled={busy || uploading || processing}
             className="rounded-lg bg-pine px-5 py-3 text-[15px] font-semibold text-cream transition hover:bg-ink disabled:opacity-60"
           >
             {t("newListing.publish")}

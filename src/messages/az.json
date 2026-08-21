@@ -158,7 +158,8 @@
       "photoTooBig": "Fayl 5 MB-dan böyükdür",
       "photoType": "Yalnız şəkil yükləmək olar",
       "photoUpload": "Şəkli yükləmək alınmadı — yenidən cəhd edin"
-    }
+    },
+    "photoProcessing": "Şəkil hazırlanır…"
   },
   "chat": {
     "title": "Şəxsi çat",
