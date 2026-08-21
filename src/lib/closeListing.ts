@@ -74,6 +74,12 @@ export async function closeListing(params: {
             where: { id: chosen.travelerId },
             data: { deliveriesCount: { increment: 1 } },
           }),
+          // Отправитель и путешественник — разные роли: одному засчитываем
+          // доставку, другому — отправление.
+          prisma.user.update({
+            where: { id: listing.authorId },
+            data: { sentCount: { increment: 1 } },
+          }),
         ]
       : []),
   ]);

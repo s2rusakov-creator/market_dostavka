@@ -64,6 +64,7 @@ export async function getFeed(params: {
           ratingSum: true,
           ratingCount: true,
           deliveriesCount: true,
+          sentCount: true,
         },
       },
       _count: { select: { responses: true } },
@@ -99,6 +100,7 @@ export async function getFeed(params: {
       ratingSum: l.author.ratingSum,
       ratingCount: l.author.ratingCount,
       deliveriesCount: l.author.deliveriesCount,
+      sentCount: l.author.sentCount,
     },
     isOwn: params.userId === l.authorId,
     respondedThreadId:

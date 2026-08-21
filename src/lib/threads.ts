@@ -24,7 +24,10 @@ export async function getThreads(userId: string): Promise<ThreadListItem[]> {
       sender: { select: { id: true, firstName: true, lastName: true } },
       traveler: { select: { id: true, firstName: true, lastName: true } },
       messages: {
-        orderBy: { createdAt: "desc" },
+        // Время хранится с точностью до миллисекунды, и два сообщения
+        // могут совпасть. Тогда порядок решает id — иначе в превью
+        // попадает произвольное из них.
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         take: 1,
         select: { text: true },
       },
@@ -74,7 +77,7 @@ export async function getThread(
       sender: { select: { id: true, firstName: true, lastName: true } },
       traveler: { select: { id: true, firstName: true, lastName: true } },
       messages: {
-        orderBy: { createdAt: "asc" },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
         take: 200,
         select: { id: true, text: true, createdAt: true, authorId: true },
       },

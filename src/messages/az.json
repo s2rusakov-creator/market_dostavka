@@ -107,7 +107,15 @@
     "markDone": "Çatdırıldı kimi işarələ",
     "cancelListing": "Dərcdən çıxar",
     "whoDelivered": "Kim gətirdi?",
-    "cancelChoice": "İndi yox"
+    "cancelChoice": "İndi yox",
+    "rateTitle": "Qiymətləndirin: {name}",
+    "rateComment": "Şərh (məcburi deyil)",
+    "rateSubmit": "Rəy yaz",
+    "rateLater": "Sonra",
+    "rateThanks": "Təşəkkür edirik, rəy qeydə alındı",
+    "rateSender": "Göndərəni qiymətləndir",
+    "rateTraveler": "Sərnişini qiymətləndir",
+    "sent": "{count, plural, =0 {göndəriş yoxdur} other {# göndəriş}}"
   },
   "newListing": {
     "title": "Yeni sifariş",
@@ -184,7 +192,8 @@
     "empty": "Hələ sifariş yerləşdirməmisiniz",
     "emptyTraveler": "Hələ sifarişlərə cavab verməmisiniz",
     "responses": "Cavablar",
-    "openChatWith": "{name} ilə çat"
+    "openChatWith": "{name} ilə çat",
+    "awaitingReview": "Qiymətləndirmə gözləyir"
   },
   "terms": {
     "title": "Servisin qaydaları",

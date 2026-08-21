@@ -5,6 +5,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { displayName, formatDateUntil, formatPrice } from "@/lib/format";
 import { ListingActions } from "@/components/ListingActions";
+import { ReviewForm } from "@/components/ReviewForm";
+import { pendingReviews } from "@/lib/reviews";
 import { localePath, type Locale } from "@/i18n/routing";
 
 export default async function MyPage({
@@ -20,7 +22,7 @@ export default async function MyPage({
 
   const t = await getTranslations({ locale });
 
-  const [mine, responded] = await Promise.all([
+  const [mine, responded, awaitingReview] = await Promise.all([
     prisma.listing.findMany({
       where: { authorId: user.id },
       orderBy: { createdAt: "desc" },
@@ -50,6 +52,7 @@ export default async function MyPage({
         },
       },
     }),
+    pendingReviews(user.id),
   ]);
 
   return (
@@ -57,6 +60,30 @@ export default async function MyPage({
       <h1 className="font-serif text-2xl font-semibold text-ink">
         {t("my.title")}
       </h1>
+
+      {awaitingReview.length > 0 && (
+        <section className="mt-6">
+          <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-stone">
+            {t("my.awaitingReview")}
+          </h2>
+          <ul className="flex flex-col gap-2">
+            {awaitingReview.map((deal) => (
+              <li
+                key={deal.listingId}
+                className="rounded-xl bg-cream p-4 ring-1 ring-ink/8"
+              >
+                <p className="mb-2 text-[15px] font-semibold text-ink">
+                  {deal.listingTitle}
+                </p>
+                <ReviewForm
+                  listingId={deal.listingId}
+                  targetName={deal.targetName}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="mt-6">
         <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-stone">

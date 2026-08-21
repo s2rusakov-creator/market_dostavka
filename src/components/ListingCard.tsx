@@ -41,6 +41,7 @@ export type ListingCardData = {
     ratingSum: number;
     ratingCount: number;
     deliveriesCount: number;
+    sentCount: number;
   };
   isOwn: boolean;
   respondedThreadId: string | null;
@@ -159,7 +160,7 @@ export function ListingCard({ data }: { data: ListingCardData }) {
               <span className="text-[13px] text-slate">★ {authorRating}</span>
             )}
             <span className="text-[13px] text-stone">
-              {t("listing.deliveries", { count: data.author.deliveriesCount })}
+              {t("listing.sent", { count: data.author.sentCount })}
             </span>
           </div>
 

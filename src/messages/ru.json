@@ -107,7 +107,15 @@
     "markDone": "Отметить доставленной",
     "cancelListing": "Снять с публикации",
     "whoDelivered": "Кто привёз?",
-    "cancelChoice": "Не сейчас"
+    "cancelChoice": "Не сейчас",
+    "rateTitle": "Оцените: {name}",
+    "rateComment": "Комментарий (необязательно)",
+    "rateSubmit": "Оставить отзыв",
+    "rateLater": "Потом",
+    "rateThanks": "Спасибо, отзыв учтён",
+    "rateSender": "Оценить отправителя",
+    "rateTraveler": "Оценить пассажира",
+    "sent": "{count, plural, =0 {нет отправлений} one {# отправление} few {# отправления} other {# отправлений}}"
   },
   "newListing": {
     "title": "Новая заявка",
@@ -184,7 +192,8 @@
     "empty": "Вы ещё не размещали заявок",
     "emptyTraveler": "Вы ещё не откликались на заявки",
     "responses": "Отклики",
-    "openChatWith": "Чат с {name}"
+    "openChatWith": "Чат с {name}",
+    "awaitingReview": "Ожидают оценки"
   },
   "terms": {
     "title": "Правила сервиса",

@@ -64,7 +64,10 @@ model User {
   locale          String  @default("ru")
   soundEnabled    Boolean @default(true)
   notifyEnabled   Boolean @default(true)
+  /// Сколько раз человек довёз чужую посылку.
   deliveriesCount Int     @default(0)
+  /// Сколько раз успешно отправил свою — это другая роль и другой счёт.
+  sentCount       Int     @default(0)
   ratingSum       Int     @default(0)
   ratingCount     Int     @default(0)
 
@@ -82,6 +85,8 @@ model User {
   messages          Message[]
   reportsMade       Report[]       @relation("ReportAuthor")
   oauthAccounts     OAuthAccount[]
+  reviewsWritten    Review[]       @relation("ReviewAuthor")
+  reviewsReceived   Review[]       @relation("ReviewTarget")
 }
 
 model Listing {
@@ -116,6 +121,7 @@ model Listing {
   responses Response[]
   threads   Thread[]
   reports   Report[]
+  reviews   Review[]
 
   @@index([status, createdAt])
   @@index([status, category])
@@ -227,4 +233,30 @@ model OAuthAccount {
 
   @@unique([provider, providerAccountId])
   @@index([userId])
+}
+
+/// Отзыв по завершённой сделке.
+/// Оценивают друг друга обе стороны: отправитель — того, кто вёз, а
+/// путешественник — того, чью посылку вёз. Для сервиса, где незнакомые люди
+/// передают вещи, это единственное, что заменяет договор.
+model Review {
+  id String @id @default(cuid())
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  targetId String
+  target   User   @relation("ReviewTarget", fields: [targetId], references: [id], onDelete: Cascade)
+
+  /// От 1 до 5.
+  rating    Int
+  text      String?
+  createdAt DateTime @default(now())
+
+  /// По одной сделке человек оставляет один отзыв.
+  @@unique([listingId, authorId])
+  @@index([targetId])
 }

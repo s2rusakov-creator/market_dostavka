@@ -43,9 +43,12 @@ export async function GET(
     const messages = await prisma.message.findMany({
       where: {
         threadId: id,
-        ...(validAfter ? { createdAt: { gt: validAfter } } : {}),
+        // Не gt, а gte: при строгом сравнении сообщение, попавшее в ту же
+        // миллисекунду, что и последнее известное, не пришло бы никогда.
+        // Повтор безвреден — клиент отсеивает уже виденные по id.
+        ...(validAfter ? { createdAt: { gte: validAfter } } : {}),
       },
-      orderBy: { createdAt: "asc" },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
       take: 200,
       select: {
         id: true,
