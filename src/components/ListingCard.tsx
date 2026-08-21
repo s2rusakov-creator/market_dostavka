@@ -79,21 +79,26 @@ export function ListingCard({ data }: { data: ListingCardData }) {
   return (
     <article className="rounded-xl bg-cream p-4 shadow-[0_1px_0_rgba(16,37,28,.06)] ring-1 ring-ink/8 md:p-5">
       <div className="flex gap-4">
-        <div className="hidden h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-sand ring-1 ring-ink/8 sm:block">
-          {data.photoUrl ? (
+        {/* Фото показываем на всех экранах: телефон — основное устройство
+            аудитории, а вся ценность снимка в том, что пассажир сразу видит
+            размер посылки. Заглушку «без фото» на мобильном, наоборот, не
+            рисуем — пустой квадрат там только отнимает место у текста. */}
+        {data.photoUrl ? (
+          <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-sand ring-1 ring-ink/8 sm:h-24 sm:w-24">
             <Image
               src={data.photoUrl}
               alt={t("listing.photoAlt")}
               width={96}
               height={96}
+              sizes="(max-width: 640px) 80px, 96px"
               className="h-full w-full object-cover"
             />
-          ) : (
-            <div className="grid h-full place-items-center px-2 text-center text-[11px] leading-tight text-mist">
-              {t("listing.noPhoto")}
-            </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="hidden h-24 w-24 shrink-0 place-items-center rounded-lg bg-sand px-2 text-center text-[11px] leading-tight text-mist ring-1 ring-ink/8 sm:grid">
+            {t("listing.noPhoto")}
+          </div>
+        )}
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
