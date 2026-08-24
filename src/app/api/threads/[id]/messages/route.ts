@@ -1,9 +1,11 @@
+import { after } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { handle, HttpError } from "@/lib/api";
 import { messageSchema } from "@/lib/validation";
 import { notifyNewMessage } from "@/lib/notify";
 import { displayName } from "@/lib/format";
+import { getMessagesSince, markThreadRead } from "@/lib/threads";
 
 async function loadThread(threadId: string, userId: string) {
   const thread = await prisma.thread.findUnique({
@@ -23,8 +25,14 @@ async function loadThread(threadId: string, userId: string) {
 }
 
 /**
- * Опрос новых сообщений. Клиент передаёт ?after=<isoDate> и получает только
- * то, что появилось позже — вебсокеты для двух-трёх реплик избыточны.
+ * Опрос новых сообщений. Вебсокеты для двух-трёх реплик избыточны.
+ *
+ * Курсор — пара «время и id», клиент передаёт `?after=<isoDate>&afterId=<id>`.
+ * Одного времени мало: два сообщения попадают в одну миллисекунду, и при
+ * строгом сравнении по времени второе не пришло бы никогда. Раньше это
+ * обходили нестрогим `gte`, но тогда последнее известное сообщение
+ * возвращалось на каждом тике — пустой ответ переставал быть пустым, а следом
+ * уходил лишний UPDATE отметки о прочтении. Пара решает обе задачи разом.
  */
 export async function GET(
   req: Request,
@@ -35,45 +43,19 @@ export async function GET(
     const { id } = await params;
     await loadThread(id, user.id);
 
-    const after = new URL(req.url).searchParams.get("after");
-    const afterDate = after ? new Date(after) : null;
-    const validAfter =
-      afterDate && !Number.isNaN(afterDate.getTime()) ? afterDate : null;
-
-    const messages = await prisma.message.findMany({
-      where: {
-        threadId: id,
-        // Не gt, а gte: при строгом сравнении сообщение, попавшее в ту же
-        // миллисекунду, что и последнее известное, не пришло бы никогда.
-        // Повтор безвреден — клиент отсеивает уже виденные по id.
-        ...(validAfter ? { createdAt: { gte: validAfter } } : {}),
-      },
-      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-      take: 200,
-      select: {
-        id: true,
-        text: true,
-        createdAt: true,
-        authorId: true,
-      },
+    const query = new URL(req.url).searchParams;
+    const messages = await getMessagesSince(id, user.id, {
+      after: query.get("after"),
+      afterId: query.get("afterId"),
     });
 
-    // Входящие помечаем прочитанными — счётчик непрочитанных живёт на этом.
-    if (messages.some((m) => m.authorId !== user.id)) {
-      await prisma.message.updateMany({
-        where: { threadId: id, authorId: { not: user.id }, readAt: null },
-        data: { readAt: new Date() },
-      });
+    // Отмечаем прочтение только когда опрос правда принёс чужие сообщения.
+    // При открытии переписки это делает страница чата — см. markThreadRead.
+    if (messages.some((m) => !m.mine)) {
+      await markThreadRead(id, user.id);
     }
 
-    return {
-      messages: messages.map((m) => ({
-        id: m.id,
-        text: m.text,
-        createdAt: m.createdAt.toISOString(),
-        mine: m.authorId === user.id,
-      })),
-    };
+    return { messages };
   });
 }
 
@@ -100,12 +82,18 @@ export async function POST(
     const recipientId =
       thread.senderId === user.id ? thread.travelerId : thread.senderId;
 
-    await notifyNewMessage({
-      recipientId,
-      authorName: displayName(user.firstName, user.lastName),
-      listingTitle: thread.listing.title,
-      text,
-      threadId: id,
+    // Уведомление уходит после ответа: человек не должен ждать Telegram,
+    // чтобы увидеть собственное сообщение в переписке. `after` держит
+    // serverless-функцию живой до конца работы — простой fetch без ожидания
+    // на Vercel оборвался бы вместе с ней.
+    after(async () => {
+      await notifyNewMessage({
+        recipientId,
+        authorName: displayName(user.firstName, user.lastName),
+        listingTitle: thread.listing.title,
+        text,
+        threadId: id,
+      });
     });
 
     return {

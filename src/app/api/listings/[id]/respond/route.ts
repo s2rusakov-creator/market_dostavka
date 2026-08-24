@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { handle, HttpError } from "@/lib/api";
@@ -58,11 +59,15 @@ export async function POST(
       return thread;
     });
 
-    await notifyNewResponse({
-      recipientId: listing.authorId,
-      travelerName: displayName(user.firstName, user.lastName),
-      listingTitle: listing.title,
-      threadId: thread.id,
+    // Пуш автору — после ответа: путешественник не должен ждать Telegram,
+    // чтобы попасть в только что созданный чат.
+    after(async () => {
+      await notifyNewResponse({
+        recipientId: listing.authorId,
+        travelerName: displayName(user.firstName, user.lastName),
+        listingTitle: listing.title,
+        threadId: thread.id,
+      });
     });
 
     return { threadId: thread.id };

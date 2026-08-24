@@ -48,6 +48,13 @@ export function verifyTelegramAuth(data: TelegramAuthPayload): boolean {
 }
 
 /**
+ * Сколько ждём Telegram. Без предела зависший запрос держал бы отправку
+ * сообщения до принудительного завершения serverless-функции: человек нажал
+ * «отправить» и смотрит на крутилку, потому что где-то не отвечает бот.
+ */
+const SEND_TIMEOUT_MS = 5_000;
+
+/**
  * Пуш в Telegram. Уведомления — единственный способ вернуть человека на площадку,
  * но падать из-за них нельзя: ошибку глотаем и логируем.
  */
@@ -68,6 +75,7 @@ export async function sendTelegramMessage(
         parse_mode: "HTML",
         disable_web_page_preview: true,
       }),
+      signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
     });
     if (!res.ok) {
       console.error("telegram sendMessage failed", res.status, await res.text());

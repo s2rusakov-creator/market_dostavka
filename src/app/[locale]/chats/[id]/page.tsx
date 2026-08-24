@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getCurrentUser } from "@/lib/auth";
-import { getThread } from "@/lib/threads";
+import { getThread, markThreadRead } from "@/lib/threads";
 import { ChatView } from "@/components/ChatView";
 import { localePath, type Locale } from "@/i18n/routing";
 
@@ -18,6 +18,11 @@ export default async function ThreadPage({
 
   const thread = await getThread(id, user.id);
   if (!thread) notFound();
+
+  // Человек открыл переписку и видит её целиком — значит непрочитанного здесь
+  // больше нет. Раньше это делал первый тик опроса, теперь у него строгий
+  // курсор и на открытие он ничего не возвращает.
+  await markThreadRead(id, user.id);
 
   return (
     <ChatView

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useSound } from "@/lib/useSound";
+import { nextPollDelay } from "@/lib/chatPolling";
 import { formatPrice, formatTime, initials } from "@/lib/format";
 import { MAX_MESSAGE_LENGTH } from "@/lib/constants";
 import type { Locale } from "@/i18n/routing";
@@ -15,7 +16,6 @@ type Message = {
   mine: boolean;
 };
 
-const POLL_MS = 5000;
 
 export function ChatView({
   threadId,
@@ -45,9 +45,19 @@ export function ChatView({
   const [sending, setSending] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
+  // Курсор — пара «время и id»: два сообщения попадают в одну миллисекунду,
+  // и одного времени серверу не хватает, чтобы отдать второе ровно один раз.
   const lastAtRef = useRef<string | null>(
     initialMessages.at(-1)?.createdAt ?? null
   );
+  const lastIdRef = useRef<string | null>(initialMessages.at(-1)?.id ?? null);
+  /**
+   * Когда в переписке последний раз что-то происходило.
+   * Ноль до первого запуска эффекта: во время рендера часы спрашивать нельзя.
+   */
+  const lastActivityRef = useRef<number>(0);
+  /** Разбудить опрос немедленно — ставится внутри эффекта. */
+  const wakeRef = useRef<() => void>(() => {});
   // Известные id держим в ref, а не выводим из состояния: решение «пищать или
   // нет» нужно принять до setState. Внутри апдейтера побочных эффектов быть
   // не должно — React вызывает его дважды в StrictMode, и звук задваивался.
@@ -61,14 +71,22 @@ export function ChatView({
 
   useEffect(scrollToBottom, [scrollToBottom]);
 
-  // Три реплики на сделку не стоят вебсокета — обычный опрос раз в 5 секунд.
+  // Три реплики на сделку не стоят вебсокета — хватает опроса.
   useEffect(() => {
     let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    // Открыли переписку — считаем это активностью и начинаем с частого шага.
+    lastActivityRef.current = Date.now();
 
     async function poll() {
-      const qs = lastAtRef.current
-        ? `?after=${encodeURIComponent(lastAtRef.current)}`
-        : "";
+      const params = new URLSearchParams();
+      if (lastAtRef.current) {
+        params.set("after", lastAtRef.current);
+        if (lastIdRef.current) params.set("afterId", lastIdRef.current);
+      }
+      const qs = params.size > 0 ? `?${params}` : "";
+
       try {
         const res = await fetch(`/api/threads/${threadId}/messages${qs}`);
         if (!res.ok || cancelled) return;
@@ -76,11 +94,16 @@ export function ChatView({
         const data = (await res.json()) as { messages: Message[] };
         if (data.messages.length === 0) return;
 
-        lastAtRef.current = data.messages.at(-1)!.createdAt;
+        const last = data.messages.at(-1)!;
+        lastAtRef.current = last.createdAt;
+        lastIdRef.current = last.id;
 
         const fresh = data.messages.filter((m) => !seenIdsRef.current.has(m.id));
         if (fresh.length === 0) return;
         fresh.forEach((m) => seenIdsRef.current.add(m.id));
+
+        // Переписка ожила — возвращаемся к частому шагу.
+        lastActivityRef.current = Date.now();
 
         // Звук — только на чужие сообщения: на свои он был бы эхом.
         if (fresh.some((m) => !m.mine)) play();
@@ -92,37 +115,65 @@ export function ChatView({
       }
     }
 
-    let timer: ReturnType<typeof setInterval> | null = null;
+    const nextDelay = () => nextPollDelay(Date.now() - lastActivityRef.current);
 
-    const start = () => {
-      if (timer === null) timer = setInterval(poll, POLL_MS);
-    };
     const stop = () => {
       if (timer !== null) {
-        clearInterval(timer);
+        clearTimeout(timer);
         timer = null;
       }
     };
 
+    /**
+     * Номер живой цепочки опроса.
+     *
+     * Запрос может быть в полёте, когда опрос будят заново — своим сообщением
+     * или возвратом во вкладку. Тогда старая цепочка, дождавшись ответа, тоже
+     * захочет запланировать следующий тик, и таймеров станет два: чат начнёт
+     * опрашивать вдвое чаще и уже никогда не выправится. Поэтому каждая
+     * цепочка помнит своё поколение и молча выходит, если её сменили.
+     */
+    let generation = 0;
+
+    // Самопланирующийся таймер, а не setInterval: шаг между тиками меняется,
+    // и следующий срок должен считаться после каждого ответа.
+    const schedule = (mine: number) => {
+      if (cancelled || document.hidden || mine !== generation) return;
+      stop();
+      timer = setTimeout(async () => {
+        await poll();
+        schedule(mine);
+      }, nextDelay());
+    };
+
+    const wakeNow = () => {
+      stop();
+      const mine = ++generation;
+      if (cancelled || document.hidden) return;
+      void poll().then(() => schedule(mine));
+    };
+    wakeRef.current = wakeNow;
+
     // В свёрнутой вкладке опрашивать нечего: человек всё равно не смотрит,
-    // а запрос каждые пять секунд — самая дорогая часть приложения на
+    // а запрос раз в несколько секунд — самая дорогая часть приложения на
     // бесплатном тарифе. Возвращаясь, догоняем пропущенное сразу, не
     // дожидаясь очередного тика.
     const onVisibilityChange = () => {
       if (document.hidden) {
         stop();
       } else {
-        void poll();
-        start();
+        lastActivityRef.current = Date.now();
+        wakeNow();
       }
     };
 
-    if (!document.hidden) start();
+    schedule(generation);
     document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
       cancelled = true;
       stop();
+      wakeRef.current = () => {};
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [threadId, play, scrollToBottom]);
@@ -144,10 +195,16 @@ export function ChatView({
 
     const data = (await res.json()) as { message: Message };
     lastAtRef.current = data.message.createdAt;
+    lastIdRef.current = data.message.id;
     seenIdsRef.current.add(data.message.id);
     setMessages((prev) => [...prev, data.message]);
     setText("");
     scrollToBottom();
+
+    // Написал — значит разговор идёт: возвращаем частый шаг и не ждём
+    // тридцать секунд до ответа собеседника.
+    lastActivityRef.current = Date.now();
+    wakeRef.current();
   }
 
   return (

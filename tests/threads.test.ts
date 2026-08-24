@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
-import { getThread, getThreads } from "@/lib/threads";
+import {
+  getMessagesSince,
+  getThread,
+  getThreads,
+  markThreadRead,
+} from "@/lib/threads";
 
 const DAY = 86400e3;
 
@@ -100,6 +105,160 @@ describe("getThread — доступ", () => {
       "второе",
       "третье",
     ]);
+  });
+});
+
+describe("getMessagesSince — курсор опроса", () => {
+  const noCursor = { after: null, afterId: null };
+
+  it("без курсора отдаёт переписку целиком", async () => {
+    const { sender, traveler, thread } = await scene();
+
+    await prisma.message.create({
+      data: { threadId: thread.id, authorId: sender.id, text: "раз" },
+    });
+    await prisma.message.create({
+      data: { threadId: thread.id, authorId: traveler.id, text: "два" },
+    });
+
+    const all = await getMessagesSince(thread.id, sender.id, noCursor);
+    expect(all.map((m) => m.text)).toEqual(["раз", "два"]);
+    expect(all.map((m) => m.mine)).toEqual([true, false]);
+  });
+
+  it("на курсоре последнего сообщения ответ пустой", async () => {
+    const { sender, thread } = await scene();
+
+    await prisma.message.create({
+      data: { threadId: thread.id, authorId: sender.id, text: "раз" },
+    });
+
+    const all = await getMessagesSince(thread.id, sender.id, noCursor);
+    const last = all.at(-1)!;
+
+    // Именно на этом ломался прежний нестрогий курсор: последнее сообщение
+    // возвращалось снова и снова, а следом уходил лишний UPDATE.
+    const again = await getMessagesSince(thread.id, sender.id, {
+      after: last.createdAt,
+      afterId: last.id,
+    });
+    expect(again).toEqual([]);
+  });
+
+  it("сообщение той же миллисекунды не теряется", async () => {
+    const { sender, traveler, thread } = await scene();
+    const sameInstant = new Date();
+
+    await prisma.message.create({
+      data: {
+        threadId: thread.id,
+        authorId: sender.id,
+        text: "первое",
+        createdAt: sameInstant,
+      },
+    });
+    await prisma.message.create({
+      data: {
+        threadId: thread.id,
+        authorId: traveler.id,
+        text: "второе",
+        createdAt: sameInstant,
+      },
+    });
+
+    const all = await getMessagesSince(thread.id, sender.id, noCursor);
+    expect(all).toHaveLength(2);
+
+    // Клиент знает только первое из двух — второе обязано прийти.
+    const after = await getMessagesSince(thread.id, sender.id, {
+      after: all[0].createdAt,
+      afterId: all[0].id,
+    });
+    expect(after.map((m) => m.text)).toEqual(["второе"]);
+  });
+
+  it("без id в курсоре сообщения той же миллисекунды пропускаются", async () => {
+    const { sender, traveler, thread } = await scene();
+    const sameInstant = new Date();
+
+    for (const [author, text] of [
+      [sender.id, "первое"],
+      [traveler.id, "второе"],
+    ] as const) {
+      await prisma.message.create({
+        data: { threadId: thread.id, authorId: author, text, createdAt: sameInstant },
+      });
+    }
+
+    const all = await getMessagesSince(thread.id, sender.id, noCursor);
+
+    // Старый клиент шлёт только время. Это осознанная плата за совместимость:
+    // повтора не будет, но и соседа по миллисекунде он не увидит.
+    const legacy = await getMessagesSince(thread.id, sender.id, {
+      after: all[0].createdAt,
+      afterId: null,
+    });
+    expect(legacy).toEqual([]);
+  });
+
+  it("битое время в курсоре не роняет опрос", async () => {
+    const { sender, thread } = await scene();
+    await prisma.message.create({
+      data: { threadId: thread.id, authorId: sender.id, text: "раз" },
+    });
+
+    const messages = await getMessagesSince(thread.id, sender.id, {
+      after: "не-дата",
+      afterId: null,
+    });
+    expect(messages.map((m) => m.text)).toEqual(["раз"]);
+  });
+
+  it("чужие сообщения не подмешиваются из другой переписки", async () => {
+    const { sender, traveler, listing, thread } = await scene();
+
+    const other = await prisma.user.create({
+      data: { firstName: "Артём", telegramId: 5n },
+    });
+    const otherThread = await prisma.thread.create({
+      data: { listingId: listing.id, senderId: sender.id, travelerId: other.id },
+    });
+
+    await prisma.message.create({
+      data: { threadId: thread.id, authorId: traveler.id, text: "сюда" },
+    });
+    await prisma.message.create({
+      data: { threadId: otherThread.id, authorId: other.id, text: "не сюда" },
+    });
+
+    const messages = await getMessagesSince(thread.id, sender.id, noCursor);
+    expect(messages.map((m) => m.text)).toEqual(["сюда"]);
+  });
+});
+
+describe("markThreadRead", () => {
+  it("гасит непрочитанное собеседника и не трогает своё", async () => {
+    const { sender, traveler, thread } = await scene();
+
+    await prisma.message.create({
+      data: { threadId: thread.id, authorId: traveler.id, text: "чужое" },
+    });
+    await prisma.message.create({
+      data: { threadId: thread.id, authorId: sender.id, text: "своё" },
+    });
+
+    expect((await getThreads(sender.id))[0].unread).toBe(1);
+
+    await markThreadRead(thread.id, sender.id);
+
+    expect((await getThreads(sender.id))[0].unread).toBe(0);
+    // У собеседника сообщение отправителя так и осталось непрочитанным.
+    expect((await getThreads(traveler.id))[0].unread).toBe(1);
+  });
+
+  it("на пустой переписке ничего не ломает", async () => {
+    const { sender, thread } = await scene();
+    await expect(markThreadRead(thread.id, sender.id)).resolves.toBeUndefined();
   });
 });
 

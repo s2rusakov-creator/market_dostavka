@@ -55,6 +55,88 @@ export async function getThreads(userId: string): Promise<ThreadListItem[]> {
   });
 }
 
+export type MessageCursor = {
+  /** ISO-время последнего известного клиенту сообщения. */
+  after: string | null;
+  /** Его id. Нужен, чтобы различить сообщения одной миллисекунды. */
+  afterId: string | null;
+};
+
+export type ChatMessage = {
+  id: string;
+  text: string;
+  createdAt: string;
+  mine: boolean;
+};
+
+/**
+ * Сообщения строго новее курсора.
+ *
+ * Курсор — пара «время и id». Одного времени мало: два сообщения попадают в
+ * одну миллисекунду, и при сравнении только по времени второе не пришло бы
+ * никогда. Раньше это обходили нестрогим сравнением, но тогда последнее
+ * известное сообщение возвращалось на каждом тике опроса — пустой ответ
+ * переставал быть пустым.
+ *
+ * Битое время в курсоре не ошибка: отдаём переписку с начала, клиент отсеет
+ * уже виденное по id.
+ */
+export async function getMessagesSince(
+  threadId: string,
+  userId: string,
+  cursor: MessageCursor
+): Promise<ChatMessage[]> {
+  const afterDate = cursor.after ? new Date(cursor.after) : null;
+  const validAfter =
+    afterDate && !Number.isNaN(afterDate.getTime()) ? afterDate : null;
+
+  const messages = await prisma.message.findMany({
+    where: {
+      threadId,
+      ...(validAfter
+        ? {
+            OR: [
+              { createdAt: { gt: validAfter } },
+              ...(cursor.afterId
+                ? [{ createdAt: validAfter, id: { gt: cursor.afterId } }]
+                : []),
+            ],
+          }
+        : {}),
+    },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    take: 200,
+    select: { id: true, text: true, createdAt: true, authorId: true },
+  });
+
+  return messages.map((m) => ({
+    id: m.id,
+    text: m.text,
+    createdAt: m.createdAt.toISOString(),
+    mine: m.authorId === userId,
+  }));
+}
+
+/**
+ * Отмечает входящие сообщения переписки прочитанными.
+ *
+ * Вызывается в двух местах: при открытии чата и в опросе, который действительно
+ * принёс чужие сообщения. Раньше этим занимался только опрос, и держался он на
+ * побочном эффекте: курсор сравнивался нестрого, последнее известное сообщение
+ * приходило на каждом тике заново, и если оно было чужим, следом уходил UPDATE,
+ * не менявший ни одной строки. Со строгим курсором такой опрос перестал бы
+ * отмечать что-либо вовсе.
+ */
+export async function markThreadRead(
+  threadId: string,
+  userId: string
+): Promise<void> {
+  await prisma.message.updateMany({
+    where: { threadId, authorId: { not: userId }, readAt: null },
+    data: { readAt: new Date() },
+  });
+}
+
 export type ThreadDetail = {
   id: string;
   listingId: string;
