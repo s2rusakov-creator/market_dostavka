@@ -19,20 +19,29 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 bg-ink">
-      <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-4 px-4 md:h-[74px] md:gap-7 md:px-8">
+      {/*
+        На 375 пикселях в строку должны поместиться логотип, плашка маршрута,
+        переключатель языка и кнопка входа. В прежних размерах они не влезали:
+        по-азербайджански «Daxil ol» ломалось на три строки и занимало почти всю
+        высоту шапки, по-русски «Войти» упиралось в самый край без отступа.
+        Поэтому на телефоне всё поджато, а с планшета возвращаются прежние
+        размеры. Плашку маршрута не прячем — кроме неё на телефоне нигде не
+        сказано, что доска только Москва → Баку.
+      */}
+      <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-2 px-3 md:h-[74px] md:gap-7 md:px-8">
         <Link
           href="/"
-          className="font-serif text-xl font-semibold tracking-wide text-cream md:text-2xl"
+          className="shrink-0 font-serif text-xl font-semibold tracking-wide text-cream md:text-2xl"
         >
           {t("common.appName")}
         </Link>
 
-        <div className="flex items-center gap-2 rounded-full border border-cream/15 bg-cream/8 px-3 py-1.5">
-          <span className="text-[13px] font-semibold text-cream">
+        <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-cream/15 bg-cream/8 px-2.5 py-1 md:gap-2 md:px-3 md:py-1.5">
+          <span className="text-[11.5px] font-semibold text-cream md:text-[13px]">
             {t("common.moscow")}
           </span>
-          <span className="text-xs text-fern">→</span>
-          <span className="text-[13px] font-semibold text-cream">
+          <span className="text-[10px] text-fern md:text-xs">→</span>
+          <span className="text-[11.5px] font-semibold text-cream md:text-[13px]">
             {t("common.baku")}
           </span>
         </div>
@@ -59,7 +68,7 @@ export function Header() {
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex shrink-0 items-center gap-2 md:gap-3">
           <LangSwitch />
           <AuthButton />
           {user && (

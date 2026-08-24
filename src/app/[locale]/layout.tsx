@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -8,7 +8,18 @@ import { getCurrentUser } from "@/lib/auth";
 import { SessionProvider } from "@/components/SessionProvider";
 import { Header } from "@/components/Header";
 import { TabBar } from "@/components/TabBar";
+import { ServiceWorker } from "@/components/ServiceWorker";
 import "../globals.css";
+
+/**
+ * Цвет строки состояния — цвет шапки: в режиме приложения браузерной рамки
+ * нет, и системная полоса должна выглядеть частью сайта, а не швом.
+ * viewportFit нужен телефонам с вырезом, иначе шапка уезжает под чёлку.
+ */
+export const viewport: Viewport = {
+  themeColor: "#10251C",
+  viewportFit: "cover",
+};
 
 const golos = Golos_Text({
   subsets: ["latin", "cyrillic"],
@@ -38,6 +49,21 @@ export async function generateMetadata({
   return {
     title: `${t("appName")} — ${t("moscow")} → ${t("baku")}`,
     description: t("tagline"),
+    manifest: "/manifest.webmanifest",
+    icons: {
+      icon: [
+        { url: "/icon.svg", type: "image/svg+xml" },
+        { url: "/favicon.png", sizes: "32x32", type: "image/png" },
+      ],
+      apple: "/apple-icon.png",
+    },
+    // iOS манифест не читает: полноэкранный запуск и название под иконкой
+    // задаются этими метками.
+    appleWebApp: {
+      capable: true,
+      title: t("appName"),
+      statusBarStyle: "black-translucent",
+    },
   };
 }
 
@@ -72,6 +98,7 @@ export default async function LocaleLayout({
             <Header />
             <main className="pb-tabbar md:pb-16">{children}</main>
             <TabBar />
+            <ServiceWorker />
           </SessionProvider>
         </NextIntlClientProvider>
       </body>

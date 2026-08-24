@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="YOL">
+  <!--
+    Тот же знак, но для maskable-иконок: Android обрезает значок под форму,
+    принятую в оболочке, — круг, скруглённый квадрат, каплю. Гарантированно
+    видна только центральная безопасная зона, поэтому рисунок ужат к центру
+    примерно до 70%, а подложка залита на весь холст.
+  -->
+  <rect width="512" height="512" fill="#1B3A2C"/>
+  <g transform="translate(256 256) scale(0.68) translate(-256 -256)">
+    <path d="M146 366 Q 168 186 366 146"
+          fill="none" stroke="#B5751F" stroke-width="30" stroke-linecap="round"/>
+    <circle cx="146" cy="366" r="46" fill="#F6F3EB"/>
+    <circle cx="366" cy="146" r="46" fill="#F6F3EB"/>
+  </g>
+</svg>

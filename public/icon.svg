@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="YOL">
+  <!--
+    Иконка приложения. Мотив взят из шапки сайта: плашка «Москва → Баку» —
+    главный визуальный знак продукта, и на маленьком значке он читается лучше
+    любых букв. Две точки — города, дуга между ними — рейс, которым едет
+    посылка.
+
+    Цвета из палитры проекта (src/app/globals.css): подложка pine, точки cream,
+    дуга ochre. Из этого файла собираются PNG — см. scripts/build-icons.mjs.
+  -->
+  <rect width="512" height="512" fill="#1B3A2C"/>
+  <path d="M146 366 Q 168 186 366 146"
+        fill="none" stroke="#B5751F" stroke-width="30" stroke-linecap="round"/>
+  <circle cx="146" cy="366" r="46" fill="#F6F3EB"/>
+  <circle cx="366" cy="146" r="46" fill="#F6F3EB"/>
+</svg>

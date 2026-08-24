@@ -20,7 +20,8 @@
     "db:apply": "node scripts/apply-migrations.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:db": "node scripts/test-db.mjs"
+    "test:db": "node scripts/test-db.mjs",
+    "icons": "node scripts/build-icons.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
@@ -41,6 +42,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "prisma": "^7.9.1",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "tsx": "^4.23.12",
     "typescript": "^5",

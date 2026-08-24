@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YOL — нет связи</title>
+    <!--
+      Страница на случай, когда сети нет, а показать из кеша ещё нечего:
+      человек поставил приложение и сразу ушёл в самолёт. Обычная вёрстка
+      сайта сюда не подходит — она приезжает с сервера, до которого мы как раз
+      и не дозвонились. Поэтому всё своё: цвета из палитры проекта, без
+      единого внешнего файла.
+    -->
+    <style>
+      :root {
+        --sand: #e6e1d4;
+        --cream: #f6f3eb;
+        --ink: #10251c;
+        --pine: #1b3a2c;
+        --slate: #6b7a70;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: var(--sand);
+        color: var(--ink);
+        font-family: "Golos Text", "Noto Sans", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .card {
+        max-width: 380px;
+        width: 100%;
+        background: var(--cream);
+        border-radius: 14px;
+        padding: 32px 28px;
+        text-align: center;
+        box-shadow: 0 1px 0 rgba(16, 37, 28, 0.06);
+        outline: 1px solid rgba(16, 37, 28, 0.08);
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      p { margin: 0 0 22px; font-size: 15px; line-height: 1.55; color: var(--slate); }
+      button {
+        font: inherit;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--cream);
+        background: var(--pine);
+        border: 0;
+        border-radius: 10px;
+        padding: 11px 22px;
+        cursor: pointer;
+      }
+      button:hover { background: var(--ink); }
+      button:focus-visible { outline: 2px solid var(--pine); outline-offset: 3px; }
+      svg { display: block; margin: 0 auto 18px; }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <svg width="56" height="56" viewBox="0 0 512 512" aria-hidden="true">
+        <rect width="512" height="512" rx="112" fill="#1B3A2C" />
+        <path d="M146 366 Q 168 186 366 146" fill="none" stroke="#B5751F" stroke-width="30" stroke-linecap="round" />
+        <circle cx="146" cy="366" r="46" fill="#F6F3EB" />
+        <circle cx="366" cy="146" r="46" fill="#F6F3EB" />
+      </svg>
+      <h1>Нет связи</h1>
+      <p>
+        Лента не загрузилась — телефон сейчас без интернета.
+        Проверьте подключение и попробуйте снова.
+      </p>
+      <button type="button" onclick="location.reload()">Повторить</button>
+    </main>
+  </body>
+</html>

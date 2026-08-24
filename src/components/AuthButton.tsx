@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useSession } from "./SessionProvider";
 import { initials } from "@/lib/format";
+import { clearPageCache } from "./ServiceWorker";
 
 export function AuthButton() {
   const t = useTranslations("auth");
@@ -16,7 +17,9 @@ export function AuthButton() {
     return (
       <Link
         href="/login"
-        className="rounded-lg border border-cream/25 px-3 py-1.5 text-sm font-semibold text-cream transition hover:bg-cream/10"
+        // whitespace-nowrap обязателен: по-азербайджански «Daxil ol» — два
+        // слова, и в узкой шапке кнопка ломалась на три строки.
+        className="shrink-0 whitespace-nowrap rounded-lg border border-cream/25 px-2.5 py-1.5 text-[13px] font-semibold text-cream transition hover:bg-cream/10 md:px-3 md:text-sm"
       >
         {t("signIn")}
       </Link>
@@ -26,6 +29,9 @@ export function AuthButton() {
   async function signOut() {
     setBusy(true);
     await fetch("/api/auth/logout", { method: "POST" });
+    // В кеше service worker'а осталась разметка, отрисованная для этого
+    // человека. Устройство личное, но после выхода следов быть не должно.
+    await clearPageCache();
     router.refresh();
     setBusy(false);
   }
