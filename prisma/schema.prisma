@@ -64,6 +64,10 @@ model User {
   locale          String  @default("ru")
   soundEnabled    Boolean @default(true)
   notifyEnabled   Boolean @default(true)
+  /// Показывать ли в пуше имя и текст сообщения. Здесь договариваются о
+  /// встречах и передают телефоны, а превью на экране блокировки видно
+  /// любому, кто рядом. По умолчанию включено: так уведомление полезнее.
+  notifyPreview   Boolean @default(true)
   /// Сколько раз человек довёз чужую посылку.
   deliveriesCount Int     @default(0)
   /// Сколько раз успешно отправил свою — это другая роль и другой счёт.
@@ -87,6 +91,37 @@ model User {
   oauthAccounts     OAuthAccount[]
   reviewsWritten    Review[]       @relation("ReviewAuthor")
   reviewsReceived   Review[]       @relation("ReviewTarget")
+  devices           DeviceToken[]
+}
+
+/// Устройство, на которое можно прислать пуш.
+///
+/// Отдельной таблицей, а не колонкой в User: у человека бывает телефон и
+/// планшет, и уведомление должно прийти на оба. Токен выдаёт служба доставки
+/// на устройстве и может сменить его в любой момент, поэтому уникален именно
+/// он, а не пара «человек и платформа».
+model DeviceToken {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Сам токен. Уникален глобально: одно устройство — одна запись, и если
+  /// на телефоне сменился аккаунт, токен переезжает к новому владельцу.
+  token String @unique
+
+  /// Пока только "fcm". Поле заведено заранее: на телефонах без сервисов
+  /// Google потребуется второй канал, и добавить его нужно будет без миграции.
+  provider String @default("fcm")
+  /// "android" | "ios" | "web"
+  platform String
+
+  createdAt DateTime @default(now())
+  /// Обновляется при каждом заходе с этого устройства: по нему видно, какие
+  /// токены давно мертвы, если служба доставки об этом не сказала сама.
+  lastSeenAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Listing {

@@ -55,6 +55,20 @@ export async function getThreads(userId: string): Promise<ThreadListItem[]> {
   });
 }
 
+/**
+ * Сколько всего непрочитанных сообщений у человека во всех переписках.
+ * Нужно для значка на иконке приложения — он один на всё приложение.
+ */
+export async function unreadCount(userId: string): Promise<number> {
+  return prisma.message.count({
+    where: {
+      authorId: { not: userId },
+      readAt: null,
+      thread: { OR: [{ senderId: userId }, { travelerId: userId }] },
+    },
+  });
+}
+
 export type MessageCursor = {
   /** ISO-время последнего известного клиенту сообщения. */
   after: string | null;

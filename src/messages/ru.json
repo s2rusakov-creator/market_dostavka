@@ -220,6 +220,7 @@
     "notifications": "Уведомления в Telegram",
     "deliveries": "Доставок",
     "rating": "Рейтинг",
-    "noRating": "нет оценок"
+    "noRating": "нет оценок",
+    "notifyPreview": "Текст сообщений в уведомлениях"
   }
 }

@@ -44,3 +44,4 @@ export const reportSchema = z.object({
 
 export const localeSchema = z.object({ locale: z.enum(["ru", "az"]) });
 export const soundSchema = z.object({ soundEnabled: z.boolean() });
+export const notifyPreviewSchema = z.object({ notifyPreview: z.boolean() });

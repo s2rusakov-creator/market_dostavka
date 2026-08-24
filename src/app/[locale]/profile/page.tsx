@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { initials, rating } from "@/lib/format";
 import { LangSwitch } from "@/components/LangSwitch";
 import { SoundSetting } from "@/components/SoundSetting";
+import { NotifyPreviewSetting } from "@/components/NotifyPreviewSetting";
 import { localePath, type Locale } from "@/i18n/routing";
 
 export default async function ProfilePage({
@@ -51,6 +52,10 @@ export default async function ProfilePage({
         <div className="h-px bg-ink/8" />
 
         <SoundSetting initial={user.soundEnabled} />
+
+        <div className="h-px bg-ink/8" />
+
+        <NotifyPreviewSetting initial={user.notifyPreview} />
       </section>
 
       <Link

@@ -15,6 +15,7 @@ export type CurrentUser = {
   locale: string;
   soundEnabled: boolean;
   notifyEnabled: boolean;
+  notifyPreview: boolean;
   deliveriesCount: number;
   ratingSum: number;
   ratingCount: number;
@@ -39,6 +40,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
       locale: true,
       soundEnabled: true,
       notifyEnabled: true,
+      notifyPreview: true,
       deliveriesCount: true,
       ratingSum: true,
       ratingCount: true,

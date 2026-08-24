@@ -220,6 +220,7 @@
     "notifications": "Telegram bildirişləri",
     "deliveries": "Çatdırılma",
     "rating": "Reytinq",
-    "noRating": "qiymət yoxdur"
+    "noRating": "qiymət yoxdur",
+    "notifyPreview": "Bildirişlərdə mesaj mətni"
   }
 }
