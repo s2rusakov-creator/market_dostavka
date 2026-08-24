@@ -9,6 +9,7 @@ import { SessionProvider } from "@/components/SessionProvider";
 import { Header } from "@/components/Header";
 import { TabBar } from "@/components/TabBar";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { PushSetup } from "@/components/PushSetup";
 import "../globals.css";
 
 /**
@@ -99,6 +100,7 @@ export default async function LocaleLayout({
             <main className="pb-tabbar md:pb-16">{children}</main>
             <TabBar />
             <ServiceWorker />
+            <PushSetup />
           </SessionProvider>
         </NextIntlClientProvider>
       </body>

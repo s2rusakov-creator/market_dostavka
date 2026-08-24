@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getThreads } from "@/lib/threads";
 import { formatPrice, initials } from "@/lib/format";
+import { BadgeSync } from "@/components/BadgeSync";
 import { localePath, type Locale } from "@/i18n/routing";
 
 export default async function ChatsPage({
@@ -24,6 +25,10 @@ export default async function ChatsPage({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
+      {/* Число непрочитанных здесь уже посчитано — отдаём его значку на
+          иконке приложения, чтобы он не врал после прочтения переписок. */}
+      <BadgeSync count={threads.reduce((sum, th) => sum + th.unread, 0)} />
+
       <h1 className="font-serif text-2xl font-semibold text-ink">
         {t("nav.chats")}
       </h1>

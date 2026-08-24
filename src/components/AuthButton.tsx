@@ -6,6 +6,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useSession } from "./SessionProvider";
 import { initials } from "@/lib/format";
 import { clearPageCache } from "./ServiceWorker";
+import { unregisterDevice } from "./PushSetup";
 
 export function AuthButton() {
   const t = useTranslations("auth");
@@ -28,6 +29,9 @@ export function AuthButton() {
 
   async function signOut() {
     setBusy(true);
+    // Сначала снимаем телефон с учёта — после выхода ручка уже не пустит.
+    // Иначе сюда продолжали бы приходить уведомления о чужих переписках.
+    await unregisterDevice();
     await fetch("/api/auth/logout", { method: "POST" });
     // В кеше service worker'а осталась разметка, отрисованная для этого
     // человека. Устройство личное, но после выхода следов быть не должно.
