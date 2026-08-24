@@ -10,7 +10,7 @@ import {
   MAX_SOURCE_BYTES,
 } from "@/lib/constants";
 import { compressImage } from "@/lib/imageCompression";
-import { formatPrice } from "@/lib/format";
+import { endOfDayUtc, formatPrice } from "@/lib/format";
 import type { Locale } from "@/i18n/routing";
 
 type Errors = Partial<Record<string, string>>;
@@ -101,9 +101,9 @@ export function NewListingForm({ avgPrice }: { avgPrice: number }) {
     if (!deadlineTo) {
       next.deadlineTo = t("newListing.errors.deadline");
     } else {
-      const d = new Date(deadlineTo);
-      d.setHours(23, 59, 59, 999);
-      if (d.getTime() < Date.now()) {
+      // Тот же расчёт, что на сервере: иначе форма пропускала бы дату,
+      // которую API отвергает, или наоборот.
+      if (endOfDayUtc(deadlineTo).getTime() < Date.now()) {
         next.deadlineTo = t("newListing.errors.deadlinePast");
       }
     }

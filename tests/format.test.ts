@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   displayName,
+  endOfDayUtc,
   formatDate,
   formatDateUntil,
   formatPrice,
@@ -10,6 +11,22 @@ import {
   rating,
   relativeTime,
 } from "@/lib/format";
+
+/** Прогоняет проверку в нескольких часовых поясах и возвращает зону как была. */
+function inTimeZones(zones: string[], check: (zone: string) => void): void {
+  const original = process.env.TZ;
+  try {
+    for (const zone of zones) {
+      process.env.TZ = zone;
+      check(zone);
+    }
+  } finally {
+    process.env.TZ = original;
+  }
+}
+
+/** Москва +3 и Баку +4 — зоны обеих сторон сделки. Лос-Анджелес — минусовая. */
+const ZONES = ["UTC", "Europe/Moscow", "Asia/Baku", "America/Los_Angeles"];
 
 const NBSP = " ";
 
@@ -47,24 +64,79 @@ describe("formatWeight", () => {
 
 describe("formatDate", () => {
   it("русский месяц в родительном падеже", () => {
-    expect(formatDate(new Date(2026, 7, 24), "ru")).toBe("24 августа");
-    expect(formatDate(new Date(2026, 0, 1), "ru")).toBe("1 января");
+    expect(formatDate(new Date(Date.UTC(2026, 7, 24)), "ru")).toBe("24 августа");
+    expect(formatDate(new Date(Date.UTC(2026, 0, 1)), "ru")).toBe("1 января");
   });
 
   it("азербайджанский месяц в именительном", () => {
-    expect(formatDate(new Date(2026, 8, 5), "az")).toBe("5 sentyabr");
+    expect(formatDate(new Date(Date.UTC(2026, 8, 5)), "az")).toBe("5 sentyabr");
+  });
+
+  it("конец дня не уезжает на следующее число в плюсовых зонах", () => {
+    // Ровно та заявка, на которой ловилось расхождение: автор ставил 27-е,
+    // читатель в Москве и Баку видел 28-е.
+    const deadline = new Date("2026-08-27T23:59:59.999Z");
+    inTimeZones(ZONES, (zone) => {
+      expect(formatDate(deadline, "ru"), zone).toBe("27 августа");
+    });
+  });
+
+  it("начало дня не уезжает на предыдущее число в минусовых зонах", () => {
+    const from = new Date("2026-08-27T00:00:00.000Z");
+    inTimeZones(ZONES, (zone) => {
+      expect(formatDate(from, "ru"), zone).toBe("27 августа");
+    });
   });
 });
 
 describe("formatDateUntil", () => {
   it("в азербайджанском ставит направительный падеж", () => {
-    expect(formatDateUntil(new Date(2026, 7, 30), "az")).toBe("30 avqusta");
-    expect(formatDateUntil(new Date(2026, 3, 2), "az")).toBe("2 aprelə");
+    expect(formatDateUntil(new Date(Date.UTC(2026, 7, 30)), "az")).toBe(
+      "30 avqusta"
+    );
+    expect(formatDateUntil(new Date(Date.UTC(2026, 3, 2)), "az")).toBe(
+      "2 aprelə"
+    );
   });
 
   it("в русском совпадает с обычной датой", () => {
-    const d = new Date(2026, 7, 24);
+    const d = new Date(Date.UTC(2026, 7, 24));
     expect(formatDateUntil(d, "ru")).toBe(formatDate(d, "ru"));
+  });
+
+  it("конец дня держится того же числа во всех зонах", () => {
+    const deadline = new Date("2026-08-30T23:59:59.999Z");
+    inTimeZones(ZONES, (zone) => {
+      expect(formatDateUntil(deadline, "az"), zone).toBe("30 avqusta");
+    });
+  });
+});
+
+describe("endOfDayUtc", () => {
+  it("из строки поля выбора даты делает конец того же дня", () => {
+    expect(endOfDayUtc("2026-08-27").toISOString()).toBe(
+      "2026-08-27T23:59:59.999Z"
+    );
+  });
+
+  it("результат не зависит от зоны машины", () => {
+    inTimeZones(ZONES, (zone) => {
+      expect(endOfDayUtc("2026-08-27").toISOString(), zone).toBe(
+        "2026-08-27T23:59:59.999Z"
+      );
+    });
+  });
+
+  it("готовую дату дотягивает до конца её суток", () => {
+    const noon = new Date("2026-08-27T12:00:00.000Z");
+    expect(endOfDayUtc(noon).toISOString()).toBe("2026-08-27T23:59:59.999Z");
+  });
+
+  it("то, что сохранил сервер, читается тем же числом", () => {
+    const stored = endOfDayUtc("2026-09-05");
+    inTimeZones(ZONES, (zone) => {
+      expect(formatDate(stored, "ru"), zone).toBe("5 сентября");
+    });
   });
 });
 

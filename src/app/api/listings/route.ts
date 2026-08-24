@@ -2,14 +2,16 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { handle, HttpError } from "@/lib/api";
 import { createListingSchema } from "@/lib/validation";
+import { endOfDayUtc } from "@/lib/format";
 
 export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireUser();
     const data = createListingSchema.parse(await req.json());
 
-    const endOfDay = new Date(data.deadlineTo);
-    endOfDay.setHours(23, 59, 59, 999);
+    // Конец дня считаем в UTC, а не в зоне сервера: на Vercel она UTC, локально
+    // может быть любой, и от этого зависело бы, какое число увидит читатель.
+    const endOfDay = endOfDayUtc(data.deadlineTo);
     if (endOfDay.getTime() < Date.now()) {
       throw new HttpError("DEADLINE_PAST", 422);
     }

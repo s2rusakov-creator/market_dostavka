@@ -20,8 +20,17 @@ if (!connectionString) {
 }
 
 const DAY = 24 * 3600 * 1000;
-const inDays = (n: number) =>
-  new Date(Date.now() + n * DAY).toISOString().replace("T", " ").slice(0, 23);
+
+/**
+ * Срок заявки — календарный день, а не момент времени, поэтому сид пишет
+ * границы суток в UTC. Раньше сюда попадало время запуска скрипта, и
+ * демо-заявки выглядели ровно так же криво, как боевые до правки: сервер
+ * хранил один день, читатель в Москве и Баку видел соседний.
+ */
+const dayIn = (n: number) =>
+  new Date(Date.now() + n * DAY).toISOString().slice(0, 10);
+const startOfDayIn = (n: number) => `${dayIn(n)} 00:00:00.000`;
+const endOfDayIn = (n: number) => `${dayIn(n)} 23:59:59.999`;
 
 /** Экранирование строки для SQL-литерала. */
 const q = (v: string | null) =>
@@ -74,7 +83,7 @@ const LISTINGS: Listing[] = [
     sizePreset: "POCKET",
     dimensions: null,
     deadlineFrom: null,
-    deadlineTo: inDays(4),
+    deadlineTo: endOfDayIn(4),
     pickupArea: "Хамовники",
     priceRub: 3000,
     urgent: true,
@@ -89,8 +98,8 @@ const LISTINGS: Listing[] = [
     weightKg: 1.2,
     sizePreset: "BAG",
     dimensions: null,
-    deadlineFrom: inDays(0),
-    deadlineTo: inDays(6),
+    deadlineFrom: startOfDayIn(0),
+    deadlineTo: endOfDayIn(6),
     pickupArea: "Внуково",
     priceRub: 5500,
   },
@@ -105,7 +114,7 @@ const LISTINGS: Listing[] = [
     sizePreset: "BAG",
     dimensions: "36×26×5 см",
     deadlineFrom: null,
-    deadlineTo: inDays(10),
+    deadlineTo: endOfDayIn(10),
     pickupArea: null,
     priceRub: 9000,
     fragile: true,
@@ -120,8 +129,8 @@ const LISTINGS: Listing[] = [
     weightKg: 4,
     sizePreset: "LUGGAGE",
     dimensions: null,
-    deadlineFrom: inDays(12),
-    deadlineTo: inDays(16),
+    deadlineFrom: startOfDayIn(12),
+    deadlineTo: endOfDayIn(16),
     pickupArea: null,
     priceRub: 6000,
     needsLuggage: true,

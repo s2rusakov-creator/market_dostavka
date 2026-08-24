@@ -224,10 +224,14 @@ export function ChatView({
             <p className="whitespace-pre-wrap break-words text-[14.5px] leading-relaxed">
               {m.text}
             </p>
+            {/* Время сообщения показываем в зоне того, кто читает, — это
+                правильно, но сервер его знать не может и рисует своё.
+                Расхождение здесь ожидаемо, верное значение клиентское. */}
             <div
               className={`mt-1 text-right text-[11px] ${
                 m.mine ? "text-cream/60" : "text-stone"
               }`}
+              suppressHydrationWarning
             >
               {formatTime(new Date(m.createdAt), locale)}
             </div>

@@ -88,14 +88,49 @@ export function formatWeight(value: string, _locale: Locale): string {
   return String(Math.round(n * 100) / 100).replace(".", ",");
 }
 
+/**
+ * Срок заявки — календарный день, а не момент времени.
+ *
+ * Поэтому читаем составляющие в UTC, а не в зоне того, кто смотрит. Иначе
+ * получалось расхождение: сервер собирал конец дня по своей зоне (на Vercel
+ * это UTC), браузер в Москве и Баку читал тот же момент со сдвигом на три-четыре
+ * часа и показывал следующее число. Автор ставил «до 27 августа», читатель
+ * видел «до 28 августа», а из ленты заявка пропадала 27-го — плюс расхождение
+ * разметки между сервером и клиентом при гидратации.
+ *
+ * Пара к этому — сборка срока в API и в форме: там конец дня тоже считается
+ * в UTC, см. `endOfDayUtc`.
+ */
 export function formatDate(date: Date, locale: Locale): string {
-  return `${date.getDate()} ${MONTHS[locale][date.getMonth()]}`;
+  return `${date.getUTCDate()} ${MONTHS[locale][date.getUTCMonth()]}`;
 }
 
-/** Дата для оборота «до …» / «… qədər». */
+/** Дата для оборота «до …» / «… qədər». Тоже календарная, тоже UTC. */
 export function formatDateUntil(date: Date, locale: Locale): string {
   if (locale !== "az") return formatDate(date, locale);
-  return `${date.getDate()} ${MONTHS_DATIVE_AZ[date.getMonth()]}`;
+  return `${date.getUTCDate()} ${MONTHS_DATIVE_AZ[date.getUTCMonth()]}`;
+}
+
+/**
+ * Конец календарного дня в UTC.
+ *
+ * На вход — либо строка `ГГГГ-ММ-ДД` из поля выбора даты, либо готовая дата.
+ * Общая функция нужна, чтобы сервер и форма считали срок одинаково: раньше
+ * обе стороны звали `setHours`, то есть работали каждая в своей зоне.
+ */
+export function endOfDayUtc(value: string | Date): Date {
+  const src = typeof value === "string" ? new Date(value) : value;
+  return new Date(
+    Date.UTC(
+      src.getUTCFullYear(),
+      src.getUTCMonth(),
+      src.getUTCDate(),
+      23,
+      59,
+      59,
+      999
+    )
+  );
 }
 
 export function formatTime(date: Date, _locale: Locale): string {
