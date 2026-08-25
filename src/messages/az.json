@@ -65,7 +65,9 @@
     "sortExpensive": "əvvəlcə bahalılar",
     "sortDeadline": "müddətə görə",
     "empty": "Hələ sifariş yoxdur. Birincisini siz yerləşdirin.",
-    "emptyFiltered": "Bu filtrə uyğun heç nə yoxdur."
+    "emptyFiltered": "Bu filtrə uyğun heç nə yoxdur.",
+    "showMore": "Daha çox göstər",
+    "shownOf": "Göstərilib: {shown}"
   },
   "categories": {
     "DOCUMENTS": "Sənədlər",
@@ -123,7 +125,9 @@
     "respondGone": "Sifariş silinib",
     "withdraw": "Cavabı geri götür",
     "withdrawing": "Geri götürülür…",
-    "withdrawFailed": "Geri götürmək alınmadı"
+    "withdrawFailed": "Geri götürmək alınmadı",
+    "ratingCount": "{count, plural, one {# qiymət} other {# qiymət}}",
+    "newMember": "yeni iştirakçı"
   },
   "newListing": {
     "title": "Yeni sifariş",
@@ -153,6 +157,9 @@
     "comment": "Şərh",
     "commentPlaceholder": "Götürmə və təhvil yerləri, kimə verilməli, digər detallar",
     "publish": "Sifarişi dərc et",
+    "editTitle": "Sifarişi dəyiş",
+    "saveChanges": "Dəyişiklikləri yadda saxla",
+    "edit": "Dəyiş",
     "phoneNote": "Telefonunuz gizli qalır — yalnız şəxsi çatda görünür.",
     "acceptTerms": "Qaydaları oxudum və bağlamada daşınması qadağan olunan əşyaların olmadığını təsdiq edirəm",
     "termsLink": "qaydalar",
@@ -230,6 +237,11 @@
     "rating": "Reytinq",
     "noRating": "qiymət yoxdur",
     "notifyPreview": "Bildirişlərdə mesaj mətni",
-    "sent": "Göndərişlər"
+    "sent": "Göndərişlər",
+    "reviews": "Rəylər",
+    "noReviews": "Hələ rəy yoxdur",
+    "asTraveler": "gətirib",
+    "asSender": "göndərib",
+    "myReviews": "Mənim rəylərim"
   }
 }

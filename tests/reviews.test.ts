@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { closeListing } from "@/lib/closeListing";
-import { leaveReview, reviewTarget } from "@/lib/reviews";
+import { leaveReview, reviewTarget, reviewsFor } from "@/lib/reviews";
 
 const DAY = 86400e3;
 
@@ -248,5 +248,97 @@ describe("ожидают оценки", () => {
 
     expect(await pendingReviews(sender.id)).toHaveLength(0);
     expect(await pendingReviews(stranger.id)).toHaveLength(0);
+  });
+});
+
+describe("полученные отзывы", () => {
+  it("отдаёт текст, оценку и кто написал", async () => {
+    const { sender, traveler, listing } = await deal();
+
+    await leaveReview({
+      listingId: listing.id,
+      authorId: sender.id,
+      rating: 5,
+      text: "Привёз вовремя, всё аккуратно упаковал",
+    });
+
+    const [отзыв] = await reviewsFor(traveler.id);
+    // Раньше этот текст не доставал из базы ни один запрос — человек писал
+    // его в пустоту, а на карточке оставалась только усреднённая звезда.
+    expect(отзыв.text).toBe("Привёз вовремя, всё аккуратно упаковал");
+    expect(отзыв.rating).toBe(5);
+    expect(отзыв.authorName).toBe("Марина К.");
+    expect(отзыв.listingTitle).toBe("Документы, папка А4");
+  });
+
+  it("роль выводится из данных, отдельного поля не нужно", async () => {
+    const { sender, traveler, listing } = await deal();
+
+    await leaveReview({ listingId: listing.id, authorId: sender.id, rating: 5 });
+    await leaveReview({
+      listingId: listing.id,
+      authorId: traveler.id,
+      rating: 4,
+    });
+
+    // Отзыв написал автор заявки — значит оценивали того, кто вёз.
+    expect((await reviewsFor(traveler.id))[0].role).toBe("traveler");
+    // И наоборот.
+    expect((await reviewsFor(sender.id))[0].role).toBe("sender");
+  });
+
+  it("отзыв без текста не ломает список", async () => {
+    const { sender, traveler, listing } = await deal();
+    await leaveReview({ listingId: listing.id, authorId: sender.id, rating: 4 });
+
+    const [отзыв] = await reviewsFor(traveler.id);
+    expect(отзыв.text).toBeNull();
+    expect(отзыв.rating).toBe(4);
+  });
+
+  it("чужие отзывы не подмешиваются", async () => {
+    const { sender, traveler, stranger, listing } = await deal();
+    await leaveReview({ listingId: listing.id, authorId: sender.id, rating: 5 });
+
+    expect(await reviewsFor(stranger.id)).toHaveLength(0);
+    expect(await reviewsFor(traveler.id)).toHaveLength(1);
+  });
+
+  it("свежие идут первыми", async () => {
+    const { sender, traveler, listing } = await deal();
+    await leaveReview({
+      listingId: listing.id,
+      authorId: sender.id,
+      rating: 5,
+      text: "первый",
+    });
+
+    // Вторая сделка тех же людей — нужен второй отзыв, чтобы проверить порядок.
+    const второй = await prisma.listing.create({
+      data: {
+        authorId: sender.id,
+        category: "OTHER",
+        title: "Вторая заявка",
+        priceRub: 1000,
+        deadlineTo: new Date(Date.now() + DAY),
+      },
+    });
+    await prisma.response.create({
+      data: { listingId: второй.id, travelerId: traveler.id },
+    });
+    await closeListing({
+      listingId: второй.id,
+      actorId: sender.id,
+      status: "DONE",
+    });
+    await leaveReview({
+      listingId: второй.id,
+      authorId: sender.id,
+      rating: 4,
+      text: "второй",
+    });
+
+    const список = await reviewsFor(traveler.id);
+    expect(список.map((r) => r.text)).toEqual(["второй", "первый"]);
   });
 });

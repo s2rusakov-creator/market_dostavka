@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "./prisma";
 import { HttpError } from "./api";
+import { displayName } from "./format";
 
 /**
  * Отзывы по завершённым сделкам.
@@ -114,6 +115,64 @@ export async function leaveReview(params: {
   ]);
 
   return { ok: true, targetId: target.targetId };
+}
+
+export type ReceivedReview = {
+  id: string;
+  rating: number;
+  text: string | null;
+  createdAt: string;
+  /** Кто оценил — имя в сокращённом виде, как на карточках. */
+  authorName: string;
+  /** По какой сделке. */
+  listingTitle: string;
+  /**
+   * В какой роли был оценённый: `traveler` — вёз, `sender` — отправлял.
+   * Выводится из данных, отдельного поля для этого не нужно: если отзыв
+   * написал автор заявки, значит оценивали того, кто вёз.
+   */
+  role: "sender" | "traveler";
+};
+
+/**
+ * Отзывы, полученные человеком.
+ *
+ * До этого текст отзыва не читал никто: он сохранялся в базу, до тысячи
+ * символов, и ни один запрос его оттуда не доставал. На карточках стояла
+ * только усреднённая звезда, а страницы с полученными отзывами не было
+ * вовсе — люди писали «привёз вовремя, всё аккуратно упаковал» в пустоту.
+ *
+ * Для площадки, где незнакомцы передают друг другу вещи, это существенно:
+ * ★4,8 без единого слова невозможно проверить.
+ */
+export async function reviewsFor(
+  userId: string,
+  limit = 20
+): Promise<ReceivedReview[]> {
+  const rows = await prisma.review.findMany({
+    where: { targetId: userId },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      rating: true,
+      text: true,
+      createdAt: true,
+      authorId: true,
+      author: { select: { firstName: true, lastName: true } },
+      listing: { select: { title: true, authorId: true } },
+    },
+  });
+
+  return rows.map((r) => ({
+    id: r.id,
+    rating: r.rating,
+    text: r.text,
+    createdAt: r.createdAt.toISOString(),
+    authorName: displayName(r.author.firstName, r.author.lastName),
+    listingTitle: r.listing.title,
+    role: r.authorId === r.listing.authorId ? "traveler" : "sender",
+  }));
 }
 
 export type PendingReview = {

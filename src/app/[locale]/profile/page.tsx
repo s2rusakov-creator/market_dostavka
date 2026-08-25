@@ -2,7 +2,9 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { initials, rating } from "@/lib/format";
+import { initials } from "@/lib/format";
+import { formatRating } from "@/lib/rating";
+import { platformRatingMean } from "@/lib/listings";
 import { LangSwitch } from "@/components/LangSwitch";
 import { SoundSetting } from "@/components/SoundSetting";
 import { NotifyPreviewSetting } from "@/components/NotifyPreviewSetting";
@@ -20,8 +22,12 @@ export default async function ProfilePage({
   // Запоминаем, куда человек шёл: после входа вернём сюда, а не на главную.
   if (!user) redirect(`${localePath(locale, "/login")}?next=${encodeURIComponent(localePath(locale, "/profile"))}`);
 
-  const t = await getTranslations({ locale });
-  const stars = rating(user.ratingSum, user.ratingCount);
+  const [t, platformMean] = await Promise.all([
+    getTranslations({ locale }),
+    platformRatingMean(),
+  ]);
+  // Та же формула, что и на карточках: пока оценок мало, числа нет вовсе.
+  const stars = formatRating(user.ratingSum, user.ratingCount, platformMean);
 
   return (
     <div className="mx-auto max-w-lg px-4 py-6">
@@ -65,9 +71,18 @@ export default async function ProfilePage({
         <NotifyPreviewSetting initial={user.notifyPreview} />
       </section>
 
+      {/* Свои отзывы видно там же, где их видят остальные, — на публичной
+          странице участника. Отдельная копия того же списка не нужна. */}
+      <Link
+        href={`/u/${user.id}`}
+        className="mt-5 block text-[14px] font-semibold text-moss underline underline-offset-4"
+      >
+        {t("profile.myReviews")}
+      </Link>
+
       <Link
         href="/terms"
-        className="mt-5 inline-block text-[14px] font-semibold text-moss underline underline-offset-4"
+        className="mt-3 inline-block text-[14px] font-semibold text-moss underline underline-offset-4"
       >
         {t("terms.title")}
       </Link>

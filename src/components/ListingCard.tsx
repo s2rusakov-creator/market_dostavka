@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
 import {
@@ -9,7 +10,6 @@ import {
   formatPrice,
   formatWeight,
   initials,
-  rating,
   relativeTime,
 } from "@/lib/format";
 import { RespondButton } from "./RespondButton";
@@ -35,10 +35,12 @@ export type ListingCardData = {
   createdAt: string;
   responsesCount: number;
   author: {
+    id: string;
     name: string;
     firstName: string;
     lastName: string | null;
-    ratingSum: number;
+    /** Готовая строка или null, если оценок слишком мало — см. lib/rating.ts. */
+    rating: string | null;
     ratingCount: number;
     deliveriesCount: number;
     sentCount: number;
@@ -62,7 +64,6 @@ export function ListingCard({ data }: { data: ListingCardData }) {
         date: formatDateUntil(deadlineTo, locale),
       });
 
-  const authorRating = rating(data.author.ratingSum, data.author.ratingCount);
 
   const facts = [
     data.weightKg
@@ -151,14 +152,36 @@ export function ListingCard({ data }: { data: ListingCardData }) {
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-ink/8 text-[11px] font-semibold text-ink">
-              {initials(data.author.firstName, data.author.lastName)}
-            </span>
-            <span className="text-[13.5px] font-semibold text-ink">
-              {data.author.name}
-            </span>
-            {authorRating && (
-              <span className="text-[13px] text-slate">★ {authorRating}</span>
+            {/*
+              Имя ведёт на страницу участника: там видно, за что ему поставили
+              оценки. Раньше на карточке была только усреднённая звезда, а
+              текст отзыва не показывался нигде — люди писали его в пустоту.
+            */}
+            <Link
+              href={`/u/${data.author.id}`}
+              className="flex items-center gap-3 hover:opacity-80"
+            >
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-ink/8 text-[11px] font-semibold text-ink">
+                {initials(data.author.firstName, data.author.lastName)}
+              </span>
+              <span className="text-[13.5px] font-semibold text-ink underline decoration-ink/20 underline-offset-2">
+                {data.author.name}
+              </span>
+            </Link>
+            {/*
+              Число оценок рядом со звездой — половина защиты от вранья средней:
+              «★5,0 · 1 оценка» и «★4,8 · 40 оценок» перестают выглядеть
+              одинаково. Пока оценок слишком мало, числа нет вовсе.
+            */}
+            {data.author.rating ? (
+              <span className="text-[13px] text-slate">
+                ★ {data.author.rating} ·{" "}
+                {t("listing.ratingCount", { count: data.author.ratingCount })}
+              </span>
+            ) : (
+              <span className="text-[13px] text-stone">
+                {t("listing.newMember")}
+              </span>
             )}
             <span className="text-[13px] text-stone">
               {t("listing.sent", { count: data.author.sentCount })}

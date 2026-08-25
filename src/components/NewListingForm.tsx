@@ -15,26 +15,75 @@ import type { Locale } from "@/i18n/routing";
 
 type Errors = Partial<Record<string, string>>;
 
-export function NewListingForm({ avgPrice }: { avgPrice: number }) {
+/**
+ * Значения существующей заявки — форма работает и на создание, и на правку.
+ * Даты приходят в виде «ГГГГ-ММ-ДД»: ровно то, что понимает поле выбора даты.
+ */
+export type ListingDraft = {
+  id: string;
+  category: string;
+  title: string;
+  description: string;
+  weight: string;
+  sizePreset: string | null;
+  deadlineFrom: string;
+  deadlineTo: string;
+  pickupArea: string;
+  price: string;
+  photoUrl: string | null;
+  urgent: boolean;
+  fragile: boolean;
+  needsLuggage: boolean;
+};
+
+/**
+ * Форма заявки.
+ *
+ * Одна и та же и для новой, и для правки существующей: поля, проверки и
+ * сжатие фото совпадают до последней мелочи, и держать две копии значило бы
+ * чинить каждую ошибку дважды. Отличаются только начальные значения, адрес
+ * отправки и надпись на кнопке.
+ *
+ * Правка появилась потому, что опечатку было не исправить: заявку приходилось
+ * снимать с публикации и заводить заново, теряя вместе с ней все отклики и
+ * переписки.
+ */
+export function NewListingForm({
+  avgPrice,
+  draft,
+}: {
+  avgPrice: number;
+  draft?: ListingDraft;
+}) {
   const t = useTranslations();
   const locale = useLocale() as Locale;
   const router = useRouter();
 
-  const [category, setCategory] = useState<string>("DOCUMENTS");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [weight, setWeight] = useState("");
-  const [sizePreset, setSizePreset] = useState<string | null>(null);
-  const [deadlineFrom, setDeadlineFrom] = useState("");
-  const [deadlineTo, setDeadlineTo] = useState("");
-  const [pickupArea, setPickupArea] = useState("");
-  const [price, setPrice] = useState("");
-  const [urgent, setUrgent] = useState(false);
-  const [fragile, setFragile] = useState(false);
-  const [needsLuggage, setNeedsLuggage] = useState(false);
-  const [accepted, setAccepted] = useState(false);
+  const editing = draft !== undefined;
 
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [category, setCategory] = useState<string>(
+    draft?.category ?? "DOCUMENTS"
+  );
+  const [title, setTitle] = useState(draft?.title ?? "");
+  const [description, setDescription] = useState(draft?.description ?? "");
+  const [weight, setWeight] = useState(draft?.weight ?? "");
+  const [sizePreset, setSizePreset] = useState<string | null>(
+    draft?.sizePreset ?? null
+  );
+  const [deadlineFrom, setDeadlineFrom] = useState(draft?.deadlineFrom ?? "");
+  const [deadlineTo, setDeadlineTo] = useState(draft?.deadlineTo ?? "");
+  const [pickupArea, setPickupArea] = useState(draft?.pickupArea ?? "");
+  const [price, setPrice] = useState(draft?.price ?? "");
+  const [urgent, setUrgent] = useState(draft?.urgent ?? false);
+  const [fragile, setFragile] = useState(draft?.fragile ?? false);
+  const [needsLuggage, setNeedsLuggage] = useState(draft?.needsLuggage ?? false);
+  // Правила подтверждают один раз, при публикации. Переспрашивать на каждой
+  // правке запятой незачем.
+  const [accepted, setAccepted] = useState(editing);
+
+  const [photoUrl, setPhotoUrl] = useState<string | null>(
+    draft?.photoUrl ?? null
+  );
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
@@ -117,26 +166,29 @@ export function NewListingForm({ avgPrice }: { avgPrice: number }) {
     if (!validate()) return;
 
     setBusy(true);
-    const res = await fetch("/api/listings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        category,
-        title: title.trim(),
-        description: description.trim(),
-        weightKg: weight ? Number(weight.replace(",", ".")) : undefined,
-        sizePreset: sizePreset ?? undefined,
-        deadlineFrom: deadlineFrom || undefined,
-        deadlineTo,
-        pickupArea: pickupArea.trim(),
-        priceRub: Number(price),
-        photoUrl: photoUrl ?? undefined,
-        urgent,
-        fragile,
-        needsLuggage,
-        acceptTerms: true,
-      }),
-    });
+    const res = await fetch(
+      editing ? `/api/listings/${draft.id}/edit` : "/api/listings",
+      {
+        method: editing ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category,
+          title: title.trim(),
+          description: description.trim(),
+          weightKg: weight ? Number(weight.replace(",", ".")) : undefined,
+          sizePreset: sizePreset ?? undefined,
+          deadlineFrom: deadlineFrom || undefined,
+          deadlineTo,
+          pickupArea: pickupArea.trim(),
+          priceRub: Number(price),
+          photoUrl: photoUrl ?? undefined,
+          urgent,
+          fragile,
+          needsLuggage,
+          acceptTerms: true,
+        }),
+      }
+    );
     setBusy(false);
 
     if (res.ok) {
@@ -155,7 +207,7 @@ export function NewListingForm({ avgPrice }: { avgPrice: number }) {
     >
       <div className="flex flex-wrap items-baseline gap-3">
         <h1 className="font-serif text-2xl font-semibold text-ink md:text-3xl">
-          {t("newListing.title")}
+          {editing ? t("newListing.editTitle") : t("newListing.title")}
         </h1>
         <span className="text-[13px] text-stone">
           {t("common.moscow")} → {t("common.baku")} ·{" "}
@@ -353,7 +405,7 @@ export function NewListingForm({ avgPrice }: { avgPrice: number }) {
             disabled={busy || uploading || processing}
             className="rounded-lg bg-pine px-5 py-3 text-[15px] font-semibold text-cream transition hover:bg-ink disabled:opacity-60"
           >
-            {t("newListing.publish")}
+            {editing ? t("newListing.saveChanges") : t("newListing.publish")}
           </button>
           <Link
             href="/"

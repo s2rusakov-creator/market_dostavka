@@ -170,6 +170,17 @@ export default async function MyPage({
                       })}
                     </span>
                   )}
+                  {/* Правка живой заявки: раньше опечатку в цене можно было
+                      исправить только сняв заявку и заведя заново — вместе со
+                      всеми откликами и переписками. */}
+                  {l.status !== "DONE" && l.status !== "CANCELLED" && (
+                    <Link
+                      href={`/listings/${l.id}/edit`}
+                      className="rounded-lg px-3 py-1.5 text-[13px] font-medium text-moss underline underline-offset-2 hover:text-pine"
+                    >
+                      {t("newListing.edit")}
+                    </Link>
+                  )}
                   <ListingActions
                     id={l.id}
                     status={l.status}
