@@ -10,6 +10,7 @@ import { Header } from "@/components/Header";
 import { TabBar } from "@/components/TabBar";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { PushSetup } from "@/components/PushSetup";
+import { isPushConfigured } from "@/lib/push";
 import "../globals.css";
 
 /**
@@ -100,7 +101,13 @@ export default async function LocaleLayout({
             <main className="pb-tabbar md:pb-16">{children}</main>
             <TabBar />
             <ServiceWorker />
-            <PushSetup />
+            {/*
+              Регистрировать устройство есть смысл только тогда, когда серверу
+              есть чем отправить пуш. Заодно это оберегает приложение: сборка
+              без ключей Firebase падает на запросе токена, а до запроса дело
+              не доходит, если ключей нет и на сервере.
+            */}
+            <PushSetup enabled={isPushConfigured()} />
           </SessionProvider>
         </NextIntlClientProvider>
       </body>

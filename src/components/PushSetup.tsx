@@ -24,6 +24,13 @@ import {
  * Разрешение спрашиваем только у вошедших. Человеку, который ещё смотрит
  * ленту и ничего не разместил, системный запрос «разрешить уведомления?»
  * непонятен: уведомлять его пока не о чем, а отказ потом не переспросишь.
+ *
+ * И только когда серверу есть чем отправить — про это говорит `enabled`.
+ * Дело не только в бессмысленной записи устройства: в сборке без ключей
+ * Firebase запрос токена валит приложение целиком, native-исключение из
+ * JavaScript не поймать. Так что единственная защита — не делать запрос.
+ * Отсюда правило: ключи Firebase появляются на сервере и в сборке вместе,
+ * иначе выходит приложение, которое падает сразу после входа.
  */
 const DEVICE_TOKEN_KEY = "yol_device_token";
 
@@ -53,7 +60,7 @@ export async function unregisterDevice(): Promise<void> {
   });
 }
 
-export function PushSetup() {
+export function PushSetup({ enabled }: { enabled: boolean }) {
   const user = useSession();
   const router = useRouter();
 
@@ -64,7 +71,7 @@ export function PushSetup() {
   }, []);
 
   useEffect(() => {
-    if (!isInsideApp() || !user) return;
+    if (!enabled || !isInsideApp() || !user) return;
 
     const push = pushPlugin();
     if (!push) return;
@@ -122,13 +129,17 @@ export function PushSetup() {
       await push!.register();
     }
 
-    void setup();
+    // Ни одна поломка подписки не должна мешать человеку пользоваться
+    // площадкой: он пришёл смотреть заявки, а не настраивать уведомления.
+    setup().catch((err) => {
+      console.error("пуши: подписка не удалась", err);
+    });
 
     return () => {
       cancelled = true;
       for (const listener of listeners) void listener.remove();
     };
-  }, [user, router]);
+  }, [enabled, user, router]);
 
   return null;
 }
