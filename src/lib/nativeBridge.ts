@@ -34,6 +34,11 @@ type BadgePlugin = {
   clear: () => Promise<void>;
 };
 
+type BrowserPlugin = {
+  open: (options: { url: string }) => Promise<void>;
+  close: () => Promise<void>;
+};
+
 type SplashPlugin = {
   hide: () => Promise<void>;
 };
@@ -44,6 +49,7 @@ type CapacitorGlobal = {
   Plugins?: {
     PushNotifications?: PushPlugin;
     Badge?: BadgePlugin;
+    Browser?: BrowserPlugin;
     SplashScreen?: SplashPlugin;
   };
 };
@@ -77,6 +83,43 @@ export function pushPlugin(): PushPlugin | null {
 
 export function badgePlugin(): BadgePlugin | null {
   return capacitor()?.Plugins?.Badge ?? null;
+}
+
+/**
+ * Открывает адрес во внешнем браузере телефона поверх приложения.
+ *
+ * Нужно для входа через Google: он намеренно отказывает встроенным веб-вью,
+ * чтобы человек видел настоящую адресную строку и не вводил пароль в чужом
+ * окне. Значит, окно провайдера обязано быть настоящим браузером.
+ *
+ * Возвращает true, если открыть удалось: по этому признаку снаружи решают,
+ * пытаться ли закрыть окно потом.
+ */
+export async function openExternal(url: string): Promise<boolean> {
+  const browser = capacitor()?.Plugins?.Browser;
+  if (!browser) return false;
+  try {
+    await browser.open({ url });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Закрывает окно, открытое openExternal.
+ *
+ * Умеют это не все версии оболочки, поэтому неудача — не ошибка: человек
+ * вернётся кнопкой «назад» и увидит, что уже вошёл.
+ */
+export async function closeExternal(): Promise<void> {
+  const browser = capacitor()?.Plugins?.Browser;
+  if (!browser) return;
+  try {
+    await browser.close();
+  } catch {
+    // Не поддерживается — не беда.
+  }
 }
 
 /**

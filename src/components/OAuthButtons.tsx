@@ -1,28 +1,20 @@
-import { getTranslations } from "next-intl/server";
 import { configuredProviders, PROVIDERS } from "@/lib/oauth";
-import type { Locale } from "@/i18n/routing";
+import { OAuthButton } from "./OAuthButton";
 
 /**
  * Кнопки внешних провайдеров. Показываются только те, для которых заданы
  * ключи, — иначе пользователь упирался бы в кнопку, ведущую в ошибку.
  */
-export async function OAuthButtons({ locale }: { locale: Locale }) {
+export function OAuthButtons() {
   const providers = configuredProviders();
   if (providers.length === 0) return null;
-
-  const t = await getTranslations({ locale, namespace: "auth" });
 
   return (
     <div className="flex flex-col gap-2">
       {providers.map((id) => (
-        <a
-          key={id}
-          href={`/api/auth/oauth/${id}/start`}
-          className="flex items-center justify-center gap-2.5 rounded-lg border border-ink/15 bg-white/70 px-5 py-3 text-[15px] font-semibold text-ink transition hover:border-ink/30"
-        >
+        <OAuthButton key={id} id={id} label={PROVIDERS[id].label}>
           <ProviderMark id={id} />
-          {t("continueWith", { provider: PROVIDERS[id].label })}
-        </a>
+        </OAuthButton>
       ))}
     </div>
   );

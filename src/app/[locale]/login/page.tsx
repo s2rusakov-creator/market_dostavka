@@ -17,6 +17,8 @@ const ERROR_KEYS: Record<string, string> = {
   oauth: "errOauth",
   cancelled: "errCancelled",
   telegram: "errOauth",
+  // Код пары протух, пока человек входил в браузере телефона.
+  expired: "linkExpired",
 };
 
 export default async function LoginPage({
@@ -63,7 +65,7 @@ export default async function LoginPage({
         <div className="mt-5 flex flex-col gap-4">
           {botUsername && <TelegramDeepLogin />}
 
-          <OAuthButtons locale={locale} />
+          <OAuthButtons />
 
           <div className="flex items-center gap-3">
             <span className="h-px flex-1 bg-ink/10" />
