@@ -43,3 +43,7 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Настройки Claude Code: как запустить проект для просмотра в браузере.
+# Нужны только на машине разработчика — ни сборка, ни Vercel их не читают.
+.claude/
