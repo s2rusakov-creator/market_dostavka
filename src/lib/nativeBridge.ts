@@ -34,12 +34,17 @@ type BadgePlugin = {
   clear: () => Promise<void>;
 };
 
+type SplashPlugin = {
+  hide: () => Promise<void>;
+};
+
 type CapacitorGlobal = {
   isNativePlatform?: () => boolean;
   getPlatform?: () => string;
   Plugins?: {
     PushNotifications?: PushPlugin;
     Badge?: BadgePlugin;
+    SplashScreen?: SplashPlugin;
   };
 };
 
@@ -72,6 +77,23 @@ export function pushPlugin(): PushPlugin | null {
 
 export function badgePlugin(): BadgePlugin | null {
   return capacitor()?.Plugins?.Badge ?? null;
+}
+
+/**
+ * Убирает заставку приложения, когда страница уже отрисована.
+ *
+ * Оболочка прячет её и сама, по таймеру, — это страховка на случай медленной
+ * сети или отсутствия моста. Но если страница готова раньше, держать заставку
+ * незачем: человек смотрит на застывший значок вместо ленты.
+ */
+export async function hideSplash(): Promise<void> {
+  const splash = capacitor()?.Plugins?.SplashScreen;
+  if (!splash) return;
+  try {
+    await splash.hide();
+  } catch {
+    // Не вышло — заставка уйдёт по таймеру оболочки.
+  }
 }
 
 /** Ставит на значок приложения число непрочитанных. */

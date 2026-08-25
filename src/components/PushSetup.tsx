@@ -3,7 +3,12 @@
 import { useEffect } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useSession } from "./SessionProvider";
-import { appPlatform, isInsideApp, pushPlugin } from "@/lib/nativeBridge";
+import {
+  appPlatform,
+  hideSplash,
+  isInsideApp,
+  pushPlugin,
+} from "@/lib/nativeBridge";
 
 /**
  * Подписка на пуши, когда сайт открыт внутри приложения.
@@ -51,6 +56,12 @@ export async function unregisterDevice(): Promise<void> {
 export function PushSetup() {
   const user = useSession();
   const router = useRouter();
+
+  // Страница отрисована — заставку можно убирать, не дожидаясь таймера
+  // оболочки. Это делается и для гостя, поэтому отдельным эффектом.
+  useEffect(() => {
+    void hideSplash();
+  }, []);
 
   useEffect(() => {
     if (!isInsideApp() || !user) return;
