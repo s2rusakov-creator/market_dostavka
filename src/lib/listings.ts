@@ -68,6 +68,18 @@ export async function getFeed(params: {
         },
       },
       _count: { select: { responses: true } },
+      /**
+       * Откликался ли этот человек — вопрос к откликам, а не к перепискам.
+       *
+       * Раньше состояние кнопки выводилось из существования чата, и это
+       * совпадало с истиной только потому, что отклик был необратим. Теперь
+       * отклик можно отозвать, а переписка при этом остаётся, если в ней
+       * успели поговорить, — и карточка продолжала бы утверждать «вы
+       * откликнулись» у человека, который отклик снял.
+       */
+      responses: params.userId
+        ? { where: { travelerId: params.userId }, select: { id: true } }
+        : false,
       threads: params.userId
         ? { where: { travelerId: params.userId }, select: { id: true } }
         : false,
@@ -103,10 +115,18 @@ export async function getFeed(params: {
       sentCount: l.author.sentCount,
     },
     isOwn: params.userId === l.authorId,
+    // Отклик есть — показываем «вы откликнулись» и ведём в переписку, если
+    // она заведена. Отклика нет — кнопка снова предлагает откликнуться,
+    // даже если переписка с прошлого раза сохранилась.
     respondedThreadId:
-      "threads" in l && Array.isArray(l.threads) && l.threads.length > 0
-        ? l.threads[0].id
+      "responses" in l && Array.isArray(l.responses) && l.responses.length > 0
+        ? "threads" in l && Array.isArray(l.threads) && l.threads.length > 0
+          ? l.threads[0].id
+          : null
         : null,
+    /** Откликался ли, независимо от того, есть ли переписка. */
+    hasResponded:
+      "responses" in l && Array.isArray(l.responses) && l.responses.length > 0,
   }));
 }
 

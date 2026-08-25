@@ -14,7 +14,8 @@ export default async function ThreadPage({
   setRequestLocale(locale);
 
   const user = await getCurrentUser();
-  if (!user) redirect(localePath(locale, "/login"));
+  // Запоминаем, куда человек шёл: после входа вернём сюда, а не на главную.
+  if (!user) redirect(`${localePath(locale, "/login")}?next=${encodeURIComponent(localePath(locale, `/chats/${id}`))}`);
 
   const thread = await getThread(id, user.id);
   if (!thread) notFound();

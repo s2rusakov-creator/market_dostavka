@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
+import { safeNextPath } from "@/lib/nextPath";
 
 type Mode = "login" | "register";
 
@@ -19,6 +21,7 @@ const ERROR_KEYS: Record<string, string> = {
 export function EmailAuthForm() {
   const t = useTranslations("auth");
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
@@ -48,7 +51,7 @@ export function EmailAuthForm() {
     setBusy(false);
 
     if (res.ok) {
-      router.push("/");
+      router.push((safeNextPath(searchParams.get("next")) ?? "/") as never);
       router.refresh();
       return;
     }

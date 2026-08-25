@@ -17,7 +17,8 @@ export default async function ProfilePage({
   setRequestLocale(locale);
 
   const user = await getCurrentUser();
-  if (!user) redirect(localePath(locale, "/login"));
+  // Запоминаем, куда человек шёл: после входа вернём сюда, а не на главную.
+  if (!user) redirect(`${localePath(locale, "/login")}?next=${encodeURIComponent(localePath(locale, "/profile"))}`);
 
   const t = await getTranslations({ locale });
   const stars = rating(user.ratingSum, user.ratingCount);
@@ -36,9 +37,15 @@ export default async function ProfilePage({
           <div className="text-[17px] font-semibold text-ink">
             {user.firstName} {user.lastName ?? ""}
           </div>
+          {/*
+            Показываем обе роли. Раньше в профиле были только доставки, а на
+            карточках в ленте — отправления, и один человек описывался разными
+            числами в разных местах.
+          */}
           <div className="mt-0.5 text-[13px] text-slate">
             {t("profile.deliveries")}: {user.deliveriesCount} ·{" "}
-            {t("profile.rating")}: {stars ?? t("profile.noRating")}
+            {t("profile.sent")}: {user.sentCount} · {t("profile.rating")}:{" "}
+            {stars ?? t("profile.noRating")}
           </div>
         </div>
       </section>

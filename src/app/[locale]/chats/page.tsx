@@ -16,7 +16,8 @@ export default async function ChatsPage({
   setRequestLocale(locale);
 
   const user = await getCurrentUser();
-  if (!user) redirect(localePath(locale, "/login"));
+  // Запоминаем, куда человек шёл: после входа вернём сюда, а не на главную.
+  if (!user) redirect(`${localePath(locale, "/login")}?next=${encodeURIComponent(localePath(locale, "/chats"))}`);
 
   const [t, threads] = await Promise.all([
     getTranslations({ locale }),

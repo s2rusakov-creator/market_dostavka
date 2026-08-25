@@ -185,3 +185,69 @@ describe("закрытие заявки", () => {
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 });
+
+describe("просроченная заявка", () => {
+  /**
+   * Посылку часто везут в последний день, а срок к тому времени уже вышел и
+   * заявка автоматически ушла в EXPIRED. Закрыть её всё равно нужно: иначе
+   * сделка остаётся без засчитанной доставки, без отправления и без отзывов
+   * у обеих сторон.
+   */
+  const просрочить = (id: string) =>
+    prisma.listing.update({ where: { id }, data: { status: "EXPIRED" } });
+
+  it("закрывается как доставленная, счётчики растут", async () => {
+    const { author, listing, travelers } = await scene(1);
+    await просрочить(listing.id);
+
+    const итог = await closeListing({
+      listingId: listing.id,
+      actorId: author.id,
+      status: "DONE",
+    });
+
+    expect(итог.creditedTo).toBe(travelers[0].id);
+    expect(await deliveries(travelers[0].id)).toBe(1);
+    expect(
+      (await prisma.listing.findUniqueOrThrow({ where: { id: listing.id } }))
+        .status
+    ).toBe("DONE");
+  });
+
+  it("после закрытия отзыв становится возможен", async () => {
+    const { author, listing, travelers } = await scene(1);
+    await просрочить(listing.id);
+
+    await closeListing({
+      listingId: listing.id,
+      actorId: author.id,
+      status: "DONE",
+    });
+
+    const { reviewTarget } = await import("@/lib/reviews");
+    expect(await reviewTarget(listing.id, author.id)).toMatchObject({
+      targetId: travelers[0].id,
+      role: "sender",
+    });
+    expect(await reviewTarget(listing.id, travelers[0].id)).toMatchObject({
+      targetId: author.id,
+      role: "traveler",
+    });
+  });
+
+  it("чужую просроченную заявку закрыть нельзя", async () => {
+    const { listing } = await scene(1);
+    await просрочить(listing.id);
+    const посторонний = await prisma.user.create({
+      data: { firstName: "Посторонний", telegramId: 999n },
+    });
+
+    await expect(
+      closeListing({
+        listingId: listing.id,
+        actorId: посторонний.id,
+        status: "DONE",
+      })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+});

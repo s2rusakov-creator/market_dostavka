@@ -17,6 +17,8 @@ export type CurrentUser = {
   notifyEnabled: boolean;
   notifyPreview: boolean;
   deliveriesCount: number;
+  /** Отправитель и путешественник — разные роли, и счёт у них разный. */
+  sentCount: number;
   ratingSum: number;
   ratingCount: number;
 };
@@ -42,6 +44,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
       notifyEnabled: true,
       notifyPreview: true,
       deliveriesCount: true,
+      sentCount: true,
       ratingSum: true,
       ratingCount: true,
     },

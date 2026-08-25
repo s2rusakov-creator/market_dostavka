@@ -18,7 +18,8 @@ export default async function MyPage({
   setRequestLocale(locale);
 
   const user = await getCurrentUser();
-  if (!user) redirect(localePath(locale, "/login"));
+  // Запоминаем, куда человек шёл: после входа вернём сюда, а не на главную.
+  if (!user) redirect(`${localePath(locale, "/login")}?next=${encodeURIComponent(localePath(locale, "/my"))}`);
 
   const t = await getTranslations({ locale });
 
@@ -34,6 +35,10 @@ export default async function MyPage({
             traveler: { select: { id: true, firstName: true, lastName: true } },
           },
         },
+        // Переписки нужны, чтобы из своей заявки можно было попасть к
+        // откликнувшемуся. Раньше здесь было только их число, и, чтобы
+        // ответить человеку, приходилось идти в чаты и искать по названию.
+        threads: { select: { id: true, travelerId: true } },
       },
     }),
     prisma.thread.findMany({
@@ -120,10 +125,51 @@ export default async function MyPage({
                   )}
                 </div>
 
+                {/*
+                  Откликнувшиеся — ссылками в их переписки. Раньше здесь было
+                  только число, и, чтобы ответить человеку, приходилось идти
+                  в раздел чатов и искать нужный по названию заявки.
+                */}
+                {l.responses.length > 0 && (
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className="text-[13px] text-stone">
+                      {t("listing.responsesCount", {
+                        count: l._count.responses,
+                      })}
+                    </span>
+                    {l.responses.map((r) => {
+                      const thread = l.threads.find(
+                        (th) => th.travelerId === r.traveler.id
+                      );
+                      const name = displayName(
+                        r.traveler.firstName,
+                        r.traveler.lastName
+                      );
+                      return thread ? (
+                        <Link
+                          key={r.traveler.id}
+                          href={`/chats/${thread.id}`}
+                          className="text-[13px] font-semibold text-moss underline underline-offset-2 hover:text-pine"
+                        >
+                          {name}
+                        </Link>
+                      ) : (
+                        <span key={r.traveler.id} className="text-[13px] text-slate">
+                          {name}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
                 <div className="mt-2 flex flex-wrap items-center gap-3">
-                  <span className="text-[13px] text-stone">
-                    {t("listing.responsesCount", { count: l._count.responses })}
-                  </span>
+                  {l.responses.length === 0 && (
+                    <span className="text-[13px] text-stone">
+                      {t("listing.responsesCount", {
+                        count: l._count.responses,
+                      })}
+                    </span>
+                  )}
                   <ListingActions
                     id={l.id}
                     status={l.status}
@@ -152,6 +198,12 @@ export default async function MyPage({
           <ul className="flex flex-col gap-2">
             {responded.map((th) => (
               <li key={th.id}>
+                {/*
+                  Срок и статус здесь были нужны с самого начала: страница их
+                  и так запрашивала, но не показывала. Без них путешественник
+                  не мог понять, жива ли ещё заявка, снял ли её отправитель
+                  или сделка уже закрыта.
+                */}
                 <Link
                   href={`/chats/${th.id}`}
                   className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-xl bg-cream p-4 ring-1 ring-ink/8 transition hover:ring-ink/20"
@@ -162,6 +214,18 @@ export default async function MyPage({
                   <span className="text-[13px] text-slate">
                     {formatPrice(th.listing.priceRub, locale)} {t("common.rub")}
                   </span>
+                  <span className="text-[13px] text-stone">
+                    {t("listing.deadlineUntil", {
+                      date: formatDateUntil(th.listing.deadlineTo, locale),
+                    })}
+                  </span>
+                  {th.listing.status !== "ACTIVE" && (
+                    <span className="rounded-full bg-ink/6 px-2 py-0.5 text-[11px] font-semibold uppercase text-slate">
+                      {t(
+                        `listing.status${th.listing.status}` as "listing.statusDONE"
+                      )}
+                    </span>
+                  )}
                   <span className="ml-auto text-[13px] font-semibold text-moss">
                     {t("chat.openChat")}
                   </span>

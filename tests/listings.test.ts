@@ -103,6 +103,9 @@ describe("getFeed", () => {
     const stranger = await makeUser("Лейла", 3n);
     const listing = await makeListing(author.id);
 
+    await prisma.response.create({
+      data: { listingId: listing.id, travelerId: traveler.id },
+    });
     const thread = await prisma.thread.create({
       data: {
         listingId: listing.id,
@@ -111,12 +114,52 @@ describe("getFeed", () => {
       },
     });
 
-    expect((await getFeed({ userId: traveler.id }))[0].respondedThreadId).toBe(
-      thread.id
-    );
-    expect(
-      (await getFeed({ userId: stranger.id }))[0].respondedThreadId
-    ).toBeNull();
+    const дляНего = (await getFeed({ userId: traveler.id }))[0];
+    expect(дляНего.hasResponded).toBe(true);
+    expect(дляНего.respondedThreadId).toBe(thread.id);
+
+    const дляПостороннего = (await getFeed({ userId: stranger.id }))[0];
+    expect(дляПостороннего.hasResponded).toBe(false);
+    expect(дляПостороннего.respondedThreadId).toBeNull();
+  });
+
+  it("отозвавший отклик снова видит кнопку, даже если переписка осталась", async () => {
+    const author = await makeUser("Марина", 1n);
+    const traveler = await makeUser("Рустам", 2n);
+    const listing = await makeListing(author.id);
+
+    await prisma.response.create({
+      data: { listingId: listing.id, travelerId: traveler.id },
+    });
+    await prisma.thread.create({
+      data: {
+        listingId: listing.id,
+        senderId: author.id,
+        travelerId: traveler.id,
+      },
+    });
+
+    // Отзыв отклика: переписку с сообщениями мы сохраняем, она принадлежит
+    // обоим. Но карточка не должна продолжать утверждать «вы откликнулись».
+    await prisma.response.deleteMany({ where: { travelerId: traveler.id } });
+
+    const карточка = (await getFeed({ userId: traveler.id }))[0];
+    expect(карточка.hasResponded).toBe(false);
+    expect(карточка.respondedThreadId).toBeNull();
+  });
+
+  it("откликнувшемуся без переписки кнопка не ведёт в никуда", async () => {
+    const author = await makeUser("Марина", 1n);
+    const traveler = await makeUser("Рустам", 2n);
+    const listing = await makeListing(author.id);
+
+    await prisma.response.create({
+      data: { listingId: listing.id, travelerId: traveler.id },
+    });
+
+    const карточка = (await getFeed({ userId: traveler.id }))[0];
+    expect(карточка.hasResponded).toBe(true);
+    expect(карточка.respondedThreadId).toBeNull();
   });
 
   it("вес отдаётся строкой, чтобы не терять точность Decimal", async () => {

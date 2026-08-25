@@ -115,7 +115,15 @@
     "rateThanks": "Təşəkkür edirik, rəy qeydə alındı",
     "rateSender": "Göndərəni qiymətləndir",
     "rateTraveler": "Sərnişini qiymətləndir",
-    "sent": "{count, plural, =0 {göndəriş yoxdur} other {# göndəriş}}"
+    "sent": "{count, plural, =0 {göndəriş yoxdur} other {# göndəriş}}",
+    "respondFailed": "Alınmadı. Yenidən cəhd edin",
+    "respondUnauthorized": "Sessiyanın vaxtı bitdi — yenidən daxil olun",
+    "respondNotActive": "Sifariş artıq bağlanıb",
+    "respondOwn": "Bu sizin sifarişinizdir",
+    "respondGone": "Sifariş silinib",
+    "withdraw": "Cavabı geri götür",
+    "withdrawing": "Geri götürülür…",
+    "withdrawFailed": "Geri götürmək alınmadı"
   },
   "newListing": {
     "title": "Yeni sifariş",
@@ -221,6 +229,7 @@
     "deliveries": "Çatdırılma",
     "rating": "Reytinq",
     "noRating": "qiymət yoxdur",
-    "notifyPreview": "Bildirişlərdə mesaj mətni"
+    "notifyPreview": "Bildirişlərdə mesaj mətni",
+    "sent": "Göndərişlər"
   }
 }

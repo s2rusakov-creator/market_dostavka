@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
+import { safeNextPath } from "@/lib/nextPath";
 
 type Phase = "idle" | "waiting" | "expired" | "error";
 
@@ -20,6 +22,7 @@ const POLL_MS = 2000;
 export function TelegramDeepLogin() {
   const t = useTranslations("auth");
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [links, setLinks] = useState<{ deepLink: string; webLink: string } | null>(
@@ -68,7 +71,7 @@ export function TelegramDeepLogin() {
 
         if (status.status === "ok") {
           stopPolling();
-          router.push("/");
+          router.push((safeNextPath(searchParams.get("next")) ?? "/") as never);
           router.refresh();
         } else if (status.status === "expired") {
           stopPolling();

@@ -8,6 +8,7 @@ import { OAuthButtons } from "@/components/OAuthButtons";
 import { EmailAuthForm } from "@/components/EmailAuthForm";
 import { DevLogin } from "@/components/DevLogin";
 import { localePath, type Locale } from "@/i18n/routing";
+import { safeNextPath } from "@/lib/nextPath";
 
 /** Коды, которые возвращают OAuth-роуты в ?error=. */
 const ERROR_KEYS: Record<string, string> = {
@@ -23,18 +24,21 @@ export default async function LoginPage({
   searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const user = await getCurrentUser();
-  if (user) redirect(localePath(locale, "/"));
-
-  const [t, { error }] = await Promise.all([
-    getTranslations({ locale, namespace: "auth" }),
+  const [user, { error, next }] = await Promise.all([
+    getCurrentUser(),
     searchParams,
   ]);
+
+  // Уже вошедшего отправляем туда, куда он метил, а не на главную: сюда можно
+  // попасть по ссылке из старой вкладки, где интерфейс ещё думает, что гость.
+  if (user) redirect(safeNextPath(next) ?? localePath(locale, "/"));
+
+  const t = await getTranslations({ locale, namespace: "auth" });
 
   const devLoginAllowed =
     process.env.NODE_ENV !== "production" && process.env.ALLOW_DEV_LOGIN === "1";

@@ -45,6 +45,7 @@ export type ListingCardData = {
   };
   isOwn: boolean;
   respondedThreadId: string | null;
+  hasResponded: boolean;
 };
 
 export function ListingCard({ data }: { data: ListingCardData }) {
@@ -169,6 +170,7 @@ export function ListingCard({ data }: { data: ListingCardData }) {
               listingId={data.id}
               isOwn={data.isOwn}
               status={data.status}
+              hasResponded={data.hasResponded}
               respondedThreadId={data.respondedThreadId}
             />
             {/* Между рендером на сервере и гидратацией проходит время, и

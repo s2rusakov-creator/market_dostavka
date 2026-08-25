@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
+import { safeNextPath } from "@/lib/nextPath";
 
 /**
  * Вход без Telegram для локальной разработки.
@@ -9,6 +11,7 @@ import { useRouter } from "@/i18n/navigation";
  */
 export function DevLogin() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -19,7 +22,7 @@ export function DevLogin() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: name || "Тестовый пользователь" }),
     });
-    router.push("/");
+    router.push((safeNextPath(searchParams.get("next")) ?? "/") as never);
     router.refresh();
   }
 

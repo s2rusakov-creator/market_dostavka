@@ -27,7 +27,17 @@ export function ListingActions({
   const [busy, setBusy] = useState(false);
   const [choosing, setChoosing] = useState(false);
 
-  if (status !== "ACTIVE" && status !== "MATCHED") return null;
+  /**
+   * Закрытыми считаются только доставленные и снятые. Просроченную заявку
+   * закрыть можно и нужно: посылку часто везут в последний день, а срок к
+   * тому времени уже вышел. Раньше кнопки просто исчезали — и сделка
+   * оставалась без засчитанной доставки, без отправления и без отзывов
+   * у обеих сторон, хотя серверная функция закрытия такую заявку принимает.
+   */
+  if (status === "DONE" || status === "CANCELLED") return null;
+
+  /** Снимать с публикации просроченную незачем — она и так не в ленте. */
+  const можноСнять = status !== "EXPIRED";
 
   async function close(next: "DONE" | "CANCELLED", travelerId?: string) {
     setBusy(true);
@@ -86,14 +96,16 @@ export function ListingActions({
       >
         {t("markDone")}
       </button>
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => close("CANCELLED")}
-        className="rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate transition hover:text-danger disabled:opacity-60"
-      >
-        {t("cancelListing")}
-      </button>
+      {можноСнять && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => close("CANCELLED")}
+          className="rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate transition hover:text-danger disabled:opacity-60"
+        >
+          {t("cancelListing")}
+        </button>
+      )}
     </div>
   );
 }

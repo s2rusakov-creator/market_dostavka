@@ -14,7 +14,8 @@ export default async function NewListingPage({
   setRequestLocale(locale);
 
   const user = await getCurrentUser();
-  if (!user) redirect(localePath(locale, "/login"));
+  // Запоминаем, куда человек шёл: после входа вернём сюда, а не на главную.
+  if (!user) redirect(`${localePath(locale, "/login")}?next=${encodeURIComponent(localePath(locale, "/new"))}`);
 
   const stats = await getStats();
   return <NewListingForm avgPrice={stats.avgPrice} />;

@@ -5,6 +5,7 @@ import { handle, HttpError } from "@/lib/api";
 import { respondSchema } from "@/lib/validation";
 import { notifyNewResponse } from "@/lib/notify";
 import { displayName } from "@/lib/format";
+import { withdrawResponse } from "@/lib/responses";
 
 /** Отклик путешественника: создаёт отклик, заводит личный чат и шлёт пуш автору. */
 export async function POST(
@@ -71,5 +72,20 @@ export async function POST(
     });
 
     return { threadId: thread.id };
+  });
+}
+
+/**
+ * Отозвать свой отклик. Промах по кнопке не должен быть необратимым.
+ */
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return handle(async () => {
+    const user = await requireUser();
+    const { id } = await params;
+
+    return withdrawResponse({ listingId: id, travelerId: user.id });
   });
 }

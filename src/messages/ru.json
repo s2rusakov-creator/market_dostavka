@@ -115,7 +115,15 @@
     "rateThanks": "Спасибо, отзыв учтён",
     "rateSender": "Оценить отправителя",
     "rateTraveler": "Оценить пассажира",
-    "sent": "{count, plural, =0 {нет отправлений} one {# отправление} few {# отправления} other {# отправлений}}"
+    "sent": "{count, plural, =0 {нет отправлений} one {# отправление} few {# отправления} other {# отправлений}}",
+    "respondFailed": "Не получилось. Попробуйте ещё раз",
+    "respondUnauthorized": "Сессия истекла — войдите заново",
+    "respondNotActive": "Заявку уже закрыли",
+    "respondOwn": "Это ваша заявка",
+    "respondGone": "Заявка удалена",
+    "withdraw": "Отозвать отклик",
+    "withdrawing": "Отзываем…",
+    "withdrawFailed": "Не получилось отозвать"
   },
   "newListing": {
     "title": "Новая заявка",
@@ -221,6 +229,7 @@
     "deliveries": "Доставок",
     "rating": "Рейтинг",
     "noRating": "нет оценок",
-    "notifyPreview": "Текст сообщений в уведомлениях"
+    "notifyPreview": "Текст сообщений в уведомлениях",
+    "sent": "Отправлений"
   }
 }

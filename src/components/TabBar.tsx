@@ -25,7 +25,13 @@ export function TabBar() {
           return (
             <Link
               key={item.href}
-              href={user || item.href === "/" ? item.href : "/login"}
+              // Гостя ведём на вход, но помним, куда он метил: после входа
+              // вернём именно туда, а не на главную.
+              href={
+                user || item.href === "/"
+                  ? item.href
+                  : (`/login?next=${encodeURIComponent(item.href)}` as never)
+              }
               className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] ${
                 active ? "font-semibold text-ink" : "text-stone"
               }`}
